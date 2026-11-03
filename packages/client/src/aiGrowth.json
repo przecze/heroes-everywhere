@@ -1,0 +1,27 @@
+{
+ "days": 28,
+ "seeds": 8,
+ "stamp": "b1afc266e4f339ab",
+ "card": {
+  "weeks": 118,
+  "leftOfGrowth": 0.3783126144768709,
+  "mainShare": 0.8702639682667201,
+  "inGarrisons": 0.06560326787429357,
+  "bareTowns": 1.9915254237288136,
+  "lostToMonsters": 0,
+  "townsLost": 0.06779661016949153,
+  "endArmy": 40928,
+  "gold": 3960
+ },
+ "raid": {
+  "weeks": 97,
+  "leftOfGrowth": 0.28255935276570776,
+  "mainShare": 0.9017762034831044,
+  "inGarrisons": 0.04373725967176804,
+  "bareTowns": 1.907216494845361,
+  "lostToMonsters": 0,
+  "townsLost": 0.5510204081632653,
+  "endArmy": 30877,
+  "gold": 2980
+ }
+}

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Heroes Everywhere" />
+    <title>Heroes Everywhere</title>
+    <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#241c12" />
+    <link rel="stylesheet" href="/src/style.css" />
+    <link rel="stylesheet" href="/src/panels.css" />
+    <link rel="stylesheet" href="/src/chat.css" />
+    <link rel="stylesheet" href="/src/layers.css" />
+  </head>
+  <body class="loading">
+    <!-- Shown until the first screen is drawn (a phone on a slow connection waits a few seconds for the app):
+         the original's loading picture (HotA's LOADBAR) once it's in, the icon until then or without the game files. -->
+    <div id="splash" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#000;color:#e8c860;font:20px Georgia,serif;z-index:50"><img class="splashIcon" src="/icon-192.png" width="96" height="96" alt="" /><span class="splashIcon" style="color:#9a8a6a;font-size:16px">Loading…</span><img id="splashArt" src="/res/mods%2Fmainmenu%2Fcontent%2Fdata%2Floadbar.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;visibility:hidden" onload="this.style.visibility='visible'" /></div>
+    <script>
+      // The loading picture shown last (ui/backdrops.ts, EXTRAS backdrops), so a game's load is one picture from the first moment.
+      try {
+        var splashArt = localStorage.getItem("heroes.splashArt");
+        if (splashArt) document.getElementById("splashArt").src = splashArt;
+        // "Remade for the web" under the picture's logo, as the game's loading screen has it (ui/webEmblem.ts keeps its
+        // picture, ui/backdrops.ts where it sits on this backdrop): there from the first moment (2026-10-27).
+        var emb = JSON.parse(localStorage.getItem("heroes.splashEmblem") || "null");
+        var embAt = JSON.parse(localStorage.getItem("heroes.splashEmblemAt") || "[390,258]");
+        if (emb && emb.src) {
+          var e = document.createElement("img");
+          e.id = "splashEmblem";
+          e.alt = "";
+          e.src = emb.src;
+          e.style.cssText = "position:absolute;visibility:hidden";
+          document.getElementById("splash").appendChild(e);
+          var placeEmblem = function () {
+            // (Gone with the splash: every later resize, a keyboard or a turn, used to throw here; 2026-11-02.)
+            var splash = document.getElementById("splash");
+            if (!splash || !document.getElementById("splashEmblem")) return void window.removeEventListener("resize", placeEmblem);
+            var box = splash.getBoundingClientRect();
+            // The 800x600 picture as object-fit: contain draws it; the emblem as the loading screen sizes it.
+            var k = Math.min(box.width / 800, box.height / 600);
+            var w = emb.w * Math.max(0.7 * k, 9 / 17);
+            Object.assign(e.style, { left: (box.width - 800 * k) / 2 + embAt[0] * k - w / 2 + "px", top: (box.height - 600 * k) / 2 + embAt[1] * k + "px", width: w + "px", visibility: "visible" });
+          };
+          e.onload = placeEmblem;
+          window.addEventListener("resize", placeEmblem);
+        }
+      } catch (e) {}
+    </script>
+    <script>
+      // A start that never finishes (a script or file that failed to load: the network, a deploy
+      // meanwhile) left the splash or the loading bar up for ever. After a minute: say so, with a way out,
+      // and tell the server what went wrong on the way (feedback/telemetry.jsonl, client "stuck"): a browser
+      // we can't watch (a console's) otherwise just hangs with nothing for us to read.
+      (function () {
+        var waited = 0, box = null, errors = [], told = false;
+        function note(what) { if (errors.length < 20) errors.push(String(what).slice(0, 300)); }
+        window.addEventListener("error", function (e) {
+          var t = e.target;
+          note(t && t !== window && (t.src || t.href) ? "failed to load " + (t.src || t.href) : (e.message || "error") + " at " + (e.filename || "?") + ":" + (e.lineno || "?"));
+        }, true);
+        window.addEventListener("unhandledrejection", function (e) { note("rejection: " + (e.reason && (e.reason.stack || e.reason.message) || e.reason)); });
+        // How far the start got (main.ts sets data-boot at each step): the step a hang is in.
+        function boot() { return document.documentElement.dataset.boot || "the page's scripts not started"; }
+        function tell() {
+          if (told) return;
+          told = true;
+          try {
+            fetch("/__telemetry", { method: "POST", body: JSON.stringify({ client: "stuck", at: new Date().toISOString(), ua: navigator.userAgent, url: location.href, boot: boot(), errors: errors, splash: (document.getElementById("splash") || {}).textContent }) });
+          } catch (e) {}
+        }
+        // Feedback before the game's own Feedback is set up (a start that hangs or fails, 2026-11-01): the button
+        // still opens a plain box, and the note goes with what the start did (the step, the errors, the browser).
+        var plain = null;
+        function plainNote() {
+          if (plain) return plain.querySelector("textarea").focus();
+          plain = document.createElement("div");
+          plain.id = "fbPlain";
+          plain.style.cssText = "position:fixed;left:50%;top:20%;transform:translateX(-50%);z-index:200;background:#2a1d10;color:#f0e0b0;border:2px solid #b08a40;padding:12px;font:16px Georgia,serif;width:min(90vw,420px);box-sizing:border-box";
+          plain.innerHTML = '<div style="margin-bottom:8px">Feedback (the game is still loading)</div><textarea rows="4" style="width:100%;box-sizing:border-box;font:16px Georgia,serif"></textarea><div style="text-align:right;margin-top:8px"><button style="font:16px Georgia,serif;padding:8px 18px;margin-left:6px">Cancel</button><button style="font:16px Georgia,serif;padding:8px 18px;margin-left:6px">Send</button></div>';
+          var area = plain.querySelector("textarea"), b = plain.getElementsByTagName("button");
+          b[0].onclick = function () { plain.remove(); plain = null; };
+          b[1].onclick = function () {
+            var text = area.value.trim();
+            if (!text) return area.focus();
+            var key = "start-" + Date.now().toString(36);
+            var body = JSON.stringify({ text: text, context: { start: { boot: boot(), errors: errors, waited: waited, splash: !!document.getElementById("splash"), loading: !!document.documentElement.dataset.loading } }, meta: { bundle: key, ua: navigator.userAgent, url: location.href, at: new Date().toISOString(), startNote: true } });
+            b[1].disabled = true;
+            b[1].textContent = "Sending…";
+            fetch("/__feedback", { method: "POST", headers: { "content-type": "application/json" }, body: body }).then(function (r) {
+              if (!r.ok) throw new Error(String(r.status));
+              plain.remove(); plain = null;
+            }).catch(function (e) {
+              b[1].disabled = false;
+              b[1].textContent = "Send again (" + (e && e.message || "failed") + ")";
+            });
+          };
+          document.body.appendChild(plain);
+          area.focus();
+        }
+        document.addEventListener("click", function (e) {
+          if (window.__feedbackReady || !e.target || !e.target.closest || !e.target.closest("#fbToggle")) return;
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          plainNote();
+        }, true);
+        setInterval(function () {
+          var loading = document.getElementById("splash") || document.documentElement.dataset.loading;
+          waited = loading ? waited + 5 : 0;
+          // The graphics' start hanging (a phone whose GPU is still restarting after a crash, 2026-11-01): one more try
+          // after 20 s, once in two minutes.
+          if (waited === 20 && boot() === "graphics (WebGL)") {
+            try {
+              if (Date.now() - Number(sessionStorage.getItem("heroes.glStartRetry") || 0) > 120000) {
+                sessionStorage.setItem("heroes.glStartRetry", String(Date.now()));
+                return location.reload();
+              }
+            } catch (e) {}
+          }
+          if (!loading && box) { box.remove(); box = null; }
+          if (waited < 60 || box) return;
+          tell();
+          box = document.createElement("div");
+          box.style.cssText = "position:fixed;left:50%;bottom:10%;transform:translateX(-50%);z-index:100;background:#2a1d10;color:#f0e0b0;border:2px solid #b08a40;padding:12px 16px;font:16px Georgia,serif;text-align:center;max-width:90vw";
+          box.innerHTML = 'The game is taking too long to load.<br><button style="font:16px Georgia,serif;margin:10px 6px 0;padding:8px 18px">Reload</button><button style="font:16px Georgia,serif;margin:10px 6px 0;padding:8px 18px">Main menu</button><button style="font:16px Georgia,serif;margin:10px 6px 0;padding:8px 18px">Feedback</button>';
+          box.appendChild(document.createElement("div")).textContent = errors[0] || "Stuck at: " + boot();
+          var b = box.getElementsByTagName("button");
+          b[0].onclick = function () { location.reload(); };
+          b[1].onclick = function () { location.hash = "#menu"; location.reload(); };
+          b[2].onclick = function () { window.__feedbackReady ? document.getElementById("fbToggle").click() : plainNote(); };
+          document.body.appendChild(box);
+        }, 5000);
+      })();
+    </script>
+    <!-- No bar over the game on any screen (2026-10-31): the game reaches every edge of the window, our only controls
+         are the two floating round buttons (☰ and Feedback). A page error shows here, a note over the game's foot. -->
+    <div id="status" role="status"></div>
+    <!-- The page menu: a list over the game, opened by the corner button (pageMenu.ts). The game's own
+         options, ours, sound and full screen up top; the pages, the scenario picker and the players'
+         tools behind More… (the main menu has the game's own ways to the scenarios, campaigns and multiplayer). -->
+    <div id="toolbar" role="menu">
+      <button id="menuTurn" class="item wide" title="Turn the screen to the other way (upright / sideways)" hidden>&#x27F3; Turn the screen</button>
+      <button id="menuSysOptions" class="item wide" title="The game's own options: hero and enemy speed, scrolling, volume, Load / Save (in a battle: the combat options, animation speed)" hidden>System Options</button>
+      <button id="menuSeats" class="item wide" title="Hot seat: hand a colour to the computer when someone has to leave, or back to a person" hidden>Players</button>
+      <button id="options" class="item" title="What the original has no window for: the layout, one-handed play, language, the classic interface and our additions">Settings…</button>
+      <button id="menuLayouts" class="item" title="This screen in each layout: upright, sideways, one-handed. Tap one to take it">Layouts…</button>
+      <button id="mute" class="item" title="Toggle sound (M)" hidden>Sound: on</button>
+      <button id="menuInstall" class="item" title="Put the game on the home screen" hidden>Install the game</button>
+      <button id="menuFull" class="item" title="Full screen">Full screen</button>
+      <button id="menuReload" class="item wide" title="Load the page again, for the newest version. The game is kept, saved as you play">Reload (the game is kept)</button>
+      <button id="menuAbout" class="item" title="What this remake is, whose work it stands on, the original's credits" hidden>About</button>
+      <button id="menuMore" class="item wide" aria-expanded="false" title="The pages, the scenario picker, multiplayer, offline play and the players' tools">More…</button>
+      <div id="menuMoreList" hidden>
+        <nav><a href="#menu" id="navMenu">Menu</a> · <a href="#battle" id="navBattle">Battle</a> · <a href="#map" id="navMap">Map</a> · <a href="#campaign" id="navCampaign">Campaigns</a> · <a href="#complete" id="navComplete">Completeness</a></nav>
+        <span id="battleControls" hidden>
+          <label>Left <select id="armyA"></select></label>
+          <select id="ctrlA"><option value="human">Human</option><option value="ai">AI</option></select>
+          <label>Right <select id="armyB"></select></label>
+          <select id="ctrlB"><option value="ai">AI</option><option value="human">Human</option></select>
+          <button id="newBattle">New battle</button>
+        </span>
+        <span id="mapControls"></span>
+        <button id="offline" class="item" title="The whole game on this device, to play without a connection">Play offline…</button>
+        <button id="turnToggle" class="item" hidden></button>
+      </div>
+      <span id="menuVersion"></span>
+    </div>
+    <button id="menuToggle" title="Menu">&#9776;</button>
+    <div id="stage"></div>
+    <script>
+      // The splash's picture where the game's screen will be (under the page bar on a computer), so it
+      // doesn't jump when the game takes over.
+      (() => {
+        const r = document.getElementById("stage").getBoundingClientRect();
+        const splash = document.getElementById("splash");
+        if (splash && r.height > 100) Object.assign(splash.style, { top: `${r.top}px`, height: `${r.height}px`, bottom: "auto" });
+      })();
+    </script>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

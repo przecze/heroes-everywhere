@@ -1,0 +1,29 @@
+--- spellLooks.ts (generated)
++++ spellLooks.ts (with our fixes)
+~11 3825b841
+  @25+1 "c03spa1.def"
+~14 4c682643
+  @15+1 "c0acid.def"
+~15 e9a97eee
+  @15+1 "c0acid.def"
+~19 e7eedcd0
+  @25+1 "c03spa1.def"
+~21 6fe251d8
+  @15+1 "c11spa0.def"
+  @28+0 ,"ray":{"jaggedness":0.2,"hopDelay":50,"width":16,"colors":[{"start":[100,140,255,96],"end":[100,140,255,48]},{"start":[255,255,255,255],"end":[255,255,255,224]}]}
+~29 33c64e7d
+  @25+1 "c03spa1.def"
+~35 a55c3d70
+  @15+1 "c12spf1.def"}]
+  @17+1 "affectSecondary":[{"def"
+  @19+1 "c12spf0.def"
+~36 fb017145
+  @9+1 "hit"
+  @13+1 "def"
+  @15+1 "c18spw0.def"
+-67 50e2880c
+-68 80ee1442
+~100 477c0808
+  @18+1 0.6
+  @40+0 1.4,"color":[
+  @41+0 ,0,0,1],"alpha":1},{"time":2

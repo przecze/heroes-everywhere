@@ -1,0 +1,310 @@
+--- townData.ts (generated)
++++ townData.ts (with our fixes)
+~39 bd659cf5
+  @7+1 "mods/heroes3datapatch/content/data/tbcsback.png"
+~43 54514745
+  @19+1 "mods/heroes3datapatch/content/sprites/tbcsmag3"
+~44 192b3490
+  @19+1 "mods/heroes3datapatch/content/sprites/tbcsmag4"
+~47 f13e0d5b
+  @19+1 "mods/heroes3datapatch/content/sprites/tbcscstl"
+  @35+1 "mods/heroes3datapatch/content/data/tocscas1"
+  @39+1 "mods/heroes3datapatch/content/data/tzcscas1"
+~48 a9b13a60
+  @19+1 "mods/heroes3datapatch/content/sprites/tbcscas2"
+~49 4ede73f3
+  @19+1 "mods/heroes3datapatch/content/sprites/tbcscas3"
+~50 4e31bea7
+  @19+1 "mods/heroes3datapatch/content/sprites/tbcshall"
+~51 69c44dd6
+  @19+1 "mods/heroes3datapatch/content/sprites/tbcshal2"
+~52 06067a1e
+  @27+1 "mods/heroes3datapatch/content/sprites/tbcshal3"
+~53 38018bc6
+  @19+1 "mods/heroes3datapatch/content/sprites/tbcshal4"
+~69 26b9f3d8
+  @19+1 "mods/heroes3datapatch/content/sprites/tbcsdw_5"
+~70 4db80903
+  @19+1 "mods/heroes3datapatch/content/sprites/tbcsdw_6"
+~76 621793f9
+  @19+1 "mods/heroes3datapatch/content/sprites/tbcsup_5"
+~77 5219fa81
+  @19+1 "mods/heroes3datapatch/content/sprites/tbcsup_6"
+~81 5967921e
+  @7+1 "tbrmback.pcx"
+~89 52743c13
+  @19+1 "mods/heroes3datapatch/content/sprites/tbrmcstl"
+  @35+1 "mods/heroes3datapatch/content/data/torcas1"
+  @39+1 "mods/heroes3datapatch/content/data/tzrcas1"
+~90 cf929849
+  @19+1 "mods/heroes3datapatch/content/sprites/tbrmcas2"
+~91 63e79197
+  @19+1 "mods/heroes3datapatch/content/sprites/tbrmcas3"
+  @35+1 "mods/heroes3datapatch/content/data/torcas2"
+  @39+1 "mods/heroes3datapatch/content/data/tzrcas2"
+~99 b6d6bd29
+  @19+1 "mods/heroes3datapatch/content/sprites/tbrmspec"
+~102 8f775403
+  @19+1 "mods/heroes3datapatch/content/sprites/tbrmext0"
+~113 f5363ff8
+  @19+1 "mods/heroes3datapatch/content/sprites/tbrmdw_3"
+~120 f327d76f
+  @19+1 "mods/heroes3datapatch/content/sprites/tbrmup_3"
+~127 6225a0bd
+  @7+1 "mods/heroes3datapatch/content/data/tbtwback.png"
+~135 e25793cf
+  @19+1 "mods/heroes3datapatch/content/sprites/tbtwcstl"
+  @35+1 "mods/heroes3datapatch/content/data/totcas1"
+  @39+1 "mods/heroes3datapatch/content/data/tztcas1"
+~136 fe683e6b
+  @19+1 "mods/heroes3datapatch/content/sprites/tbtwcas2"
+  @35+1 "mods/heroes3datapatch/content/data/totcas2"
+  @39+1 "mods/heroes3datapatch/content/data/tztcas2"
+~137 aea94a4b
+  @19+1 "mods/heroes3datapatch/content/sprites/tbtwcas3"
+  @35+1 "mods/heroes3datapatch/content/data/totcas3"
+  @39+1 "mods/heroes3datapatch/content/data/tztcas3"
+~148 16377d41
+  @19+1 "mods/heroes3datapatch/content/sprites/tbtwext0"
+  @35+1 "mods/heroes3datapatch/content/data/totcasw"
+  @39+1 "mods/heroes3datapatch/content/data/tztcasw"
+~169 d799b3d3
+  @7+1 "mods/heroes3datapatch/content/data/tbinback.png"
+~177 d1ed6fa4
+  @19+1 "mods/heroes3datapatch/content/sprites/tbincstl"
+~178 9e703fe2
+  @19+1 "mods/heroes3datapatch/content/sprites/tbincas2"
+~179 e5ec28e5
+  @19+1 "mods/heroes3datapatch/content/sprites/tbincas3"
+~186 9e00d551
+  @19+1 "mods/heroes3datapatch/content/sprites/tbinblak"
+~188 0c7342a3
+  @19+1 "mods/heroes3datapatch/content/sprites/tbinhrd2"
+~190 96abb47c
+  @19+1 "mods/heroes3datapatch/content/sprites/tbinext1"
+  @35+1 "mods/heroes3datapatch/content/data/toicasga"
+  @39+1 "mods/heroes3datapatch/content/data/tzicasga"
+~202 9d69b14f
+  @19+1 "mods/heroes3datapatch/content/sprites/tbinup_0"
+~206 ba5dfadf
+  @19+1 "mods/heroes3datapatch/content/sprites/tbinup_4"
+~212 d774297a
+  @7+1 "tbncback.pcx"
+~221 fb991103
+  @19+1 "mods/heroes3datapatch/content/sprites/tbnccstl"
+  @35+1 "mods/heroes3datapatch/content/data/toncas1"
+  @39+1 "mods/heroes3datapatch/content/data/tzncas1"
+~222 fb103431
+  @19+1 "mods/heroes3datapatch/content/sprites/tbnccas2"
+  @35+1 "mods/heroes3datapatch/content/data/toncas2"
+  @39+1 "mods/heroes3datapatch/content/data/tzncas2"
+~231 abf23fe6
+  @19+1 "mods/heroes3datapatch/content/sprites/tbncspec"
+~258 821abc4e
+  @7+1 "tbdnback.pcx"
+~300 d93f3658
+  @7+1 "tbstback.pcx"
+~303 d42af086
+  @19+1 "mods/heroes3datapatch/content/sprites/tbstmag2"
+~312 41baa037
+  @19+1 "mods/heroes3datapatch/content/sprites/tbsthal4"
+~322 1e8cc06c
+  @19+1 "mods/heroes3datapatch/content/sprites/tbstholy"
+~327 9065de00
+  @19+1 "mods/heroes3datapatch/content/sprites/tbstdw_4"
+~340 6398c4e8
+  @7+1 "tbfrback.pcx"
+~345 97518d60
+  @19+1 "mods/heroes3datapatch/content/sprites/tbfrtvrn"
+~346 b4368f22
+  @19+1 "mods/heroes3datapatch/content/sprites/tbfrdock"
+~360 1cda7aa0
+  @19+1 "mods/heroes3datapatch/content/sprites/tbfrboat"
+~370 f8919e5d
+  @25+1 "mods/heroes3datapatch/content/sprites/tbfrdw_6"
+~375 459f7207
+  @19+1 "mods/heroes3datapatch/content/sprites/tbfrup_2"
+~381 5003d0e8
+  @7+1 "mods/heroes3datapatch/content/data/tbelback.png"
+  @95+1 "mods/heroes3datapatch/content/sprites/tbelext1"
+~383 383e56d7
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelmage"
+~384 038558ee
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelmag2"
+~385 f4efeea0
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelmag3"
+~386 3b4b78c5
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelmag4"
+~387 e8694a9f
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelmag5"
+~388 5e430335
+  @19+1 "mods/heroes3datapatch/content/sprites/tbeltvrn"
+  @35+1 "mods/heroes3datapatch/content/data/toeltvrn"
+  @39+1 "mods/heroes3datapatch/content/data/tzeltvrn"
+~390 d80f8085
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelcstl"
+  @35+1 "mods/heroes3datapatch/content/data/toelcstl"
+  @39+1 "mods/heroes3datapatch/content/data/tzelcstl"
+~391 27396143
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelcas2"
+  @35+1 "mods/heroes3datapatch/content/data/toelcas2"
+  @39+1 "mods/heroes3datapatch/content/data/tzelcas2"
+~392 face3481
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelcas3"
+  @35+1 "mods/heroes3datapatch/content/data/toelcas3"
+  @39+1 "mods/heroes3datapatch/content/data/tzelcas3"
+~393 af63643b
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelhall"
+~394 0a82f379
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelhal2"
+~395 a09fa588
+  @27+1 "mods/heroes3datapatch/content/sprites/tbelhal3"
+~396 0c2cb379
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelhal4"
+~397 c8225e64
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelmark"
+  @35+1 "mods/heroes3datapatch/content/data/toelmark"
+  @39+1 "mods/heroes3datapatch/content/data/tzelmark"
+~398 33a0dfc5
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelsilo"
+  @35+1 "mods/heroes3datapatch/content/data/toelsilo"
+  @39+1 "mods/heroes3datapatch/content/data/tzelsilo"
+~400 2456f93c
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelspec"
+~403 40bc14e0
+  @35+1 "mods/heroes3datapatch/content/data/toelboat"
+  @39+1 "mods/heroes3datapatch/content/data/tzelboat"
+~404 5efe719e
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelext6"
+~405 43cd9fdf
+  @7+1 "horde2"
+  @11+1 36
+  @15+1 null
+  @19+1 "hota/TBELHrd3"
+  @35+1 "hota/phoenixHordeBorder"
+  @39+1 "hota/phoenixHordeArea","name":"Vault of Ashes","cost":[0,5,0,0,0,0,5000],"description":"One more Firebird a week."
+~406 4d2724f3
+  @7+1 "horde2Upgr"
+  @11+1 43
+  @15+1 24
+  @19+1 "hota/TBELHrd4"
+  @35+1 "hota/phoenixHordeUpgradedBorder"
+  @39+1 "hota/phoenixHordeUpgradedArea","name":"Vault of Ashes","cost":[0,5,0,0,0,0,5000],"description":"One more Phoenix a week."
+~407 2a6c9408
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelholy"
+  @35+1 "mods/heroes3datapatch/content/data/toelholy"
+~408 0967c102
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelext2"
+~409 94dcda50
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelext3"
+~410 3ff1f8a0
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelext4"
+~412 c1bd6091
+  @25+1 "mods/heroes3datapatch/content/sprites/tbeldw_1"
+~414 223bbd5c
+  @19+1 "mods/heroes3datapatch/content/sprites/tbeldw_3"
+  @35+1 "mods/heroes3datapatch/content/data/toeldw_3"
+~415 2ffcbe00
+  @19+1 "mods/heroes3datapatch/content/sprites/tbeldw_4"
+~416 e994c80d
+  @25+1 "mods/heroes3datapatch/content/sprites/tbeldw_5"
+~417 28b1247a
+  @19+1 "mods/heroes3datapatch/content/sprites/tbeldw_6"
+~419 7ad9a692
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelup_1"
+~421 ad437f3c
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelup_3"
+  @35+1 "mods/heroes3datapatch/content/data/toelup_3"
+~422 cb327872
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelup_4"
+~423 e8260f62
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelup_5"
+~424 7d6c7a27
+  @19+1 "mods/heroes3datapatch/content/sprites/tbelup_6"
+  @35+1 "mods/heroes3datapatch/content/data/toelup_6"
+  @39+1 "mods/heroes3datapatch/content/data/tzelup_6"
+~431 c1153b0c
+  @11+1 null
+~432 97decfe3
+  @11+1 null
+~433 21e22030
+  @11+1 null
+~437 15f3cdce
+  @11+1 null
+~438 2ec78559
+  @11+1 null
+~439 98d208f1
+  @45+0 "cost":[0,0,0,0,0,0,0],
+~440 bc9cee7f
+  @11+1 null
+  @15+1 null
+~441 6930835b
+  @11+1 null
+  @15+9 null
+~442 804ec19b
+  @11+1 null
+  @15+1 null
+~444 2f54b859
+  @15+1 null
+~448 3df035a9
+  @11+1 null
+  @44+0 ,"cost":[0,0,0,0,0,0,0]
+~453 5ee9b7ad
+  @45+0 "cost":[0,0,0,0,0,0,0],
+~468 e6cd1849
+  @1+1 44
+~475 6ca9231a
+  @11+1 null
+~476 035e5a36
+  @11+1 null
+~477 c60ff979
+  @11+1 null
+~478 f05255a3
+  @11+1 null
+~481 c86879ea
+  @11+1 null
+~482 3332b8d4
+  @11+1 null
+~483 4a1fec2f
+  @45+0 "cost":[0,0,0,0,0,0,0],
+~484 ab3376dd
+  @11+1 null
+  @15+1 null
+~485 9c8a0616
+  @11+1 null
+  @15+9 null
+~486 da9b841c
+  @11+1 null
+  @15+1 null
+~488 c39f1d7b
+  @15+1 null
+~495 8775a416
+  @45+0 "cost":[0,0,0,0,0,0,0],
+~518 56aace0e
+  @11+1 null
+~519 fb1fcda2
+  @11+1 null
+~520 c02a5de7
+  @11+1 null
+~524 ab9a8f1e
+  @11+1 null
+~525 9e2b7508
+  @11+1 null
+~526 1bf36f74
+  @45+0 "cost":[0,0,0,0,0,0,0],
+~527 f43afdb6
+  @11+1 null
+  @15+1 null
+~528 267e6acc
+  @11+1 null
+  @15+9 null
+~529 7791f59d
+  @11+1 null
+  @15+1 null
+~531 ac9e09f3
+  @15+1 null
+~536 059d9b55
+  @11+1 null
+  @44+0 ,"cost":[0,0,0,0,0,0,0]
+~539 3b2a551f
+  @45+0 "cost":[0,0,0,0,0,0,0],

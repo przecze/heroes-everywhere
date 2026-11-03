@@ -1,0 +1,35 @@
+import type { Ability } from "./creatureData.ts";
+
+export interface HotaCreature {
+  id: number;
+  key: string;
+  name: string;
+  plural: string;
+  faction: string;
+  level: number;
+  cost: number[];
+  growth: number;
+  hordeGrowth: number;
+  hp: number;
+  speed: number;
+  attack: number;
+  defense: number;
+  minDamage: number;
+  maxDamage: number;
+  shots: number;
+  aiValue: number;
+  fightValue: number;
+  abilities: Ability[];
+  def: string;
+  missile: string;
+  sound: string;
+  /** Adventure map sprite and footprint rows (top to bottom: V visible, B blocked, A visitable). */
+  mapDef: string;
+  mapMask: string[];
+  /** Wandering stack size range on the map. */
+  amount: [number, number];
+  /** Portrait images (paths under the mod's sprites/): small for the turn queue, large for windows. */
+  iconSmall?: string;
+  iconLarge?: string;
+}
+

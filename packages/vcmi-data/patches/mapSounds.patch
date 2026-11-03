@@ -1,0 +1,11 @@
+--- mapSounds.ts (generated)
++++ mapSounds.ts (with our fixes)
+~131 72af0050
+  @5+1 "ambient"
+  @8+1 "LOOPCAVE"
+  @11+1 "visit"
+  @14+1 "MYSTERY"
+~199 d316025f
+  @4+1 "HORSE30"
+~200 8910275f
+  @4+1 "HORSE31"

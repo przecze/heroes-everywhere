@@ -1,0 +1,20 @@
+--- battlefields.ts (generated)
++++ battlefields.ts (with our fixes)
+~34 f4d20db2
+  @23+1 2
+  @28+1 -15
+  @30+1 -16
+~111 d591f674
+  @19+1 4
+~196 9871c42e
+  @44+4 
++227   {"id":"wasteland_rocks","background":"hota/wasteland/battleBackground.png","special":false},
++227   {"id":"swamp_grass","background":"CmBkSwHl.png","special":false},
++227   {"id":"swamp_dead","background":"CmBkSwDv.png","special":false},
++227   {"id":"sand_cave","background":"CmBkDeu.png","special":false,"layer":"underground"},
++227   {"id":"lava_cave","background":"CmBkLvSt.png","special":false,"layer":"underground"},
+-231 0c6bf601
+-232 9f9791eb
+-233 fa944f07
+-234 beb0a3cb
+-235 23c96040

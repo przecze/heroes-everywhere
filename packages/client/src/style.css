@@ -1,0 +1,1224 @@
+:root {
+  /* The page's own panels (the menu, chat, our windows): the original's dialog leather (--menu-bg, chrome/look.ts), darkened. */
+  --panel-bg: linear-gradient(rgba(16, 11, 5, 0.55), rgba(16, 11, 5, 0.55)), var(--menu-bg, none) repeat, rgba(24, 18, 10, 0.97);
+  --bg: #0d0b08;
+  --panel: #241c12;
+  --gold: #e8c46a;
+  --text: #f1e6cf;
+  --muted: #a8977a;
+  /* The phone's notch or camera hole, rounded corners and home bar (viewport-fit=cover), at the screen's edges as held;
+     probes set these to try an iPhone's. */
+  --inset-top: env(safe-area-inset-top, 0px);
+  --inset-right: env(safe-area-inset-right, 0px);
+  --inset-bottom: env(safe-area-inset-bottom, 0px);
+  --inset-left: env(safe-area-inset-left, 0px);
+  /* The same at the PAGE's edges: what every rule uses (body.sideways / .turnedUp below turn them with the page). */
+  --safe-top: var(--inset-top);
+  --safe-right: var(--inset-right);
+  --safe-bottom: var(--inset-bottom);
+  --safe-left: var(--inset-left);
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.4 Georgia, "Times New Roman", serif;
+}
+body { display: flex; flex-direction: column; }
+/* ☰ → Rotate (ui/screen.ts): the whole page turned a quarter. Held upright it turns clockwise (the game sideways, read
+   once the phone is turned to the left); held sideways it turns back (the upright layout, read once the phone is
+   turned upright clockwise). */
+/* The page's own width and height, for the panels' sizes: turned, the screen's height is the page's width
+   (100vw / 100vh would size a panel for the screen as held, past the page). */
+body { --page-w: 100vw; --page-h: 100vh; }
+body:is(.sideways, .turnedUp) { --page-w: 100vh; --page-h: 100vw; }
+@supports (height: 100dvh) {
+  body { --page-h: 100dvh; }
+  body:is(.sideways, .turnedUp) { --page-w: 100dvh; --page-h: 100dvw; }
+}
+body:is(.sideways, .turnedUp) {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vh;
+  height: 100vw;
+  width: 100dvh;
+  height: 100dvw;
+  transform-origin: top left;
+}
+body.sideways { transform: translateX(100vw) rotate(90deg); }
+/* Turned, the screen's edges are other page edges: clockwise, the camera at the top of the screen is at the page's left. */
+body.sideways { --safe-top: var(--inset-right); --safe-right: var(--inset-bottom); --safe-bottom: var(--inset-left); --safe-left: var(--inset-top); }
+body.turnedUp { --safe-top: var(--inset-left); --safe-right: var(--inset-top); --safe-bottom: var(--inset-right); --safe-left: var(--inset-bottom); }
+body.turnedUp { transform: translateY(100vh) rotate(-90deg); }
+@supports (height: 100dvh) { body.turnedUp { transform: translateY(100dvh) rotate(-90deg); } }
+/* The page's shape for the CSS, set by ui/screen.ts from the same reading as the layout: body.pageUp / .pageLand,
+   .pageShort / .pageLow (a sideways page at most 500 / 560 px high), .coarse (a touch screen). Never
+   `@media (orientation)` or the window's height for these: they see the window, not a turned page. Inside :where(),
+   so a rule weighs as much as it did inside its old @media. */
+/* No page bar (2026-10-31): the game fills the window to its edges, so a full-screen map's edge is the screen's
+   and edge-scrolling works there. A page error (main.ts) floats over the game's foot while there is one. */
+#status { position: fixed; z-index: 40; left: 50%; bottom: calc(8px + var(--safe-bottom)); transform: translateX(-50%); max-width: calc(var(--page-w) - 24px); padding: 4px 10px; color: var(--text); background: var(--panel); border: 1px solid #7a5d30; border-radius: 3px; }
+#status:empty { display: none; }
+/* The page menu (chrome/pageMenu.ts): a list over the game under its button, closed by a tap outside,
+   Escape or an item chosen. */
+#toolbar {
+  position: fixed;
+  z-index: 30;
+  top: 40px;
+  left: 6px;
+  display: none;
+  /* Two columns of short rows (System Options and More… across both): on a phone held sideways the
+     whole top level fits under the corner button, no scrolling. */
+  grid-template-columns: 1fr 1fr;
+  align-content: start;
+  gap: 4px;
+  width: min(320px, calc(var(--page-w) - 12px));
+  max-height: calc(var(--page-h) - 48px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  /* The original's dialog backing (DIBOXBCK, chrome/look.ts sets it once the game files are in), darkened. */
+  background: var(--panel-bg);
+  border: 2px solid #b08a40;
+  outline: 1px solid #000;
+  border-radius: 2px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.75);
+}
+body.menuOpen #toolbar { display: grid; }
+#toolbar select, #toolbar button, #feedback button {
+  background: #3a2c18;
+  color: var(--text);
+  border: 1px solid #7a5d30;
+  border-radius: 3px;
+  padding: 3px 8px;
+  font: inherit;
+}
+@media (hover: hover) { #toolbar button:hover, #toolbar a.item:hover, #feedback button:hover { border-color: var(--gold); } }
+#toolbar .item { display: block; min-width: 0; text-align: left; padding: 4px 10px; min-height: 34px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#toolbar .item.wide, #menuMoreList, #menuVersion { grid-column: 1 / -1; }
+#toolbar > .item { background: rgba(40, 28, 12, 0.85); }
+#toolbar a.item { display: flex; align-items: center; color: var(--text); text-decoration: none; background: #3a2c18; border: 1px solid #7a5d30; border-radius: 3px; }
+#toolbar #menuSysOptions { color: var(--gold); border-color: #a07a40; }
+#menuMore { color: var(--muted); position: relative; }
+#menuMore::after { content: "\25BE"; float: right; }
+#menuMore.open::after { content: "\25B4"; }
+#menuMore.notesWaiting::before { content: ""; position: absolute; top: 6px; right: 26px; width: 8px; height: 8px; border-radius: 50%; background: #e04a3a; }
+#menuMoreList { display: flex; flex-direction: column; gap: 4px; padding: 4px 0 0; border-top: 1px solid #5a4526; }
+#toolbar nav { padding: 0 2px 4px; border-bottom: 1px solid #5a4526; line-height: 1.8; }
+#toolbar nav a { color: var(--text); text-decoration: none; }
+#toolbar nav a.current { color: var(--gold); text-decoration: underline; }
+#toolbar label { padding: 2px 4px; }
+#menuVersion { color: var(--muted); font-size: 12px; padding: 2px 4px 0; }
+#menuVersion:empty { display: none; }
+#battleControls, #mapControls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding-bottom: 6px; border-bottom: 1px solid #5a4526; }
+#mapControls:empty { display: none; }
+#mapControls select { flex: 1 1 100%; min-width: 0; }
+[hidden] { display: none !important; }
+#stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-height: 0;
+}
+#stage canvas { image-rendering: pixelated; cursor: var(--hota-cursor, default); }
+#feedback {
+  position: fixed;
+  right: 12px;
+  top: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  z-index: 10;
+}
+/* Desktops: the two round buttons float over the game's top corners (☰ left, Feedback right), never over the
+   game's own bottom-right buttons (the town's exit, the windows' OK / Exit, the status bar). */
+@media (pointer: fine) and (min-height: 561px) {
+  #feedback { top: 3px; bottom: auto; }
+  #feedback #fbToggle { padding: 2px 8px; }
+  /* The mic beside Feedback, one row. */
+  #feedback:not(.open) { flex-direction: row; align-items: center; }
+  /* The menu's button in the top-left corner. */
+  #menuToggle { position: fixed; top: 3px; left: 8px; z-index: 31; font: 18px/1 Georgia, serif; padding: 3px 10px; background: #3a2c18; color: var(--gold); border: 1px solid #7a5d30; border-radius: 3px; }
+  body.menuOpen #menuToggle { border-color: var(--gold); }
+  @media (hover: hover) { #menuToggle:hover { border-color: var(--gold); } }
+}
+#fbForm {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(360px, calc(var(--page-w) - 24px));
+  padding: 10px;
+  background: var(--panel);
+  border: 1px solid #7a5d30;
+  border-radius: 4px;
+}
+#fbForm[hidden] { display: none; }
+#fbMic.on { border-color: #d9534f; color: #ffb3a8; }
+#fbGrip { cursor: move; touch-action: none; user-select: none; font-size: 11px; color: var(--muted); text-align: center; margin: -4px 0 0; }
+#fbText {
+  height: 90px;
+  resize: vertical;
+  background: #120e08;
+  color: var(--text);
+  border: 1px solid #5a4526;
+  font: inherit;
+  padding: 6px;
+}
+#fbStatus { color: var(--muted); font-size: 12px; }
+/* No picture from this browser (shot.ts): attach or paste one. */
+#fbAttach { color: var(--muted); font-size: 12px; cursor: pointer; }
+#fbAttach span { text-decoration: underline; }
+#fbAttach.has span { text-decoration: none; color: var(--text); }
+.townPanel {
+  position: fixed;
+  top: 52px;
+  right: 12px;
+  width: min(380px, calc(var(--page-w) - 24px));
+  max-height: calc(var(--page-h) - 120px);
+  overflow-y: auto;
+  padding: 10px 12px;
+  /* The original's dialog texture and gold edge, as the page menu and chat (chrome/look.ts dialogBacking). */
+  background: var(--panel-bg);
+  border: 2px solid #b08a40;
+  outline: 1px solid #000;
+  border-radius: 2px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.75);
+  font-size: 13px;
+  z-index: 5;
+}
+.townPanel .head b { color: var(--gold); font-weight: normal; font-size: 1.25em; }
+/* Touch screens: text a finger's size away from unreadable, buttons a finger high. */
+@media (pointer: coarse) {
+  .townPanel { font-size: 16px; }
+  .townPanel button, .townPanel select, .townPanel input { min-height: 44px; }
+  .townPanel .row { padding: 5px 0; }
+}
+.townPanel[hidden] { display: none; }
+/* Phones: centred upright; sideways clear of Android's navigation bar (the right-hand 72 px). */
+@media (max-width: 480px) { .townPanel { right: auto; left: 50%; transform: translateX(-50%); } }
+:where(body.pageShort) .townPanel { right: 84px; max-height: calc(var(--page-h) - 64px); }
+.townPanel input { font: inherit; padding: 4px 6px; min-width: 0; background: #1a130a; color: var(--text); border: 1px solid #7a5d30; border-radius: 3px; }
+.townPanel select { background: #1a130a; color: var(--text); border: 1px solid #7a5d30; border-radius: 3px; }
+.townPanel button { min-height: 36px; }
+.townPanel h4 { margin: 10px 0 4px; color: var(--gold); font-weight: normal; border-bottom: 1px solid #5a4526; }
+.townPanel .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.townPanel .sub { color: var(--muted); margin: 2px 0; }
+.townPanel .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 3px 0; }
+.townPanel .row.hint { display: block; color: #9a8a6a; font-size: 0.9em; padding-top: 0; }
+.townPanel .row.dim { opacity: 0.55; }
+.townPanel button {
+  background: #3a2c18; color: var(--text); border: 1px solid #7a5d30; border-radius: 3px; padding: 2px 8px; font: inherit; white-space: nowrap;
+}
+.townPanel button:disabled { opacity: 0.45; }
+.townPanel button.on { opacity: 1; border-color: var(--gold); color: var(--gold); }
+.townPanel select { font: inherit; min-height: 32px; max-width: 100%; }
+/* The multiplayer lobby's player list: a colour per line, and under your own line your town and bonus. */
+.mpSwatch { display: inline-block; width: 12px; height: 12px; margin-right: 6px; border: 1px solid #000; vertical-align: -1px; }
+.mpSlot { border-bottom: 1px solid #3a2c18; padding: 2px 0; }
+.mpSlot.me { background: rgba(232, 196, 104, 0.08); }
+.mpSlot .row.opts { justify-content: flex-start; padding-left: 20px; color: var(--muted); }
+.roadmap {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 16px 20px 80px;
+  overflow-y: auto;
+  height: 100%;
+  font-size: 15px;
+}
+#stage:has(.roadmap) { align-items: stretch; overflow-y: auto; }
+.roadmap h1 { color: var(--gold); font-weight: normal; margin: 8px 0 4px; }
+.roadmap h2 { color: var(--gold); font-weight: normal; margin: 22px 0 6px; border-bottom: 1px solid #5a4526; padding-bottom: 4px; }
+.roadmap p { color: var(--muted); margin: 6px 0; }
+.roadmap ul { list-style: none; padding: 0; margin: 6px 0; }
+.roadmap li { padding: 3px 0 3px 26px; position: relative; }
+.roadmap li .icon { position: absolute; left: 4px; width: 18px; text-align: center; }
+.roadmap li.done .icon { color: #7fc76a; }
+.roadmap li.part .icon { color: var(--gold); }
+.roadmap li.todo { color: var(--muted); }
+.roadmap code { background: #241c12; padding: 1px 5px; border-radius: 3px; }
+.roadmap a { color: var(--gold); }
+.roadmap .bar { position: relative; height: 14px; background: #241c12; border: 1px solid #5a4526; border-radius: 7px; margin: 4px 0 8px; overflow: hidden; }
+.roadmap .bar div { height: 100%; background: linear-gradient(90deg, #7a5d30, var(--gold)); }
+.roadmap .bar span { position: absolute; right: 8px; top: -2px; font-size: 12px; color: var(--text); }
+.complete { max-width: 1100px; }
+.complete .tiles { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+.complete .tile { flex: 1 1 150px; background: #1a140c; border: 1px solid #5a4526; border-radius: 4px; padding: 8px 12px; }
+.complete .tile .big { font-size: 26px; color: var(--gold); line-height: 1.1; }
+.complete .tile .of { font-size: 14px; color: var(--muted); }
+.complete .tile .lbl { color: var(--text); }
+.complete .tile .sub { font-size: 12px; color: var(--muted); }
+.complete .tabs { display: flex; margin: 12px 0 4px; border-bottom: 1px solid #5a4526; }
+.complete .tabs button { background: none; color: var(--muted); border: 1px solid transparent; border-bottom: none; border-radius: 4px 4px 0 0; padding: 6px 16px; font: inherit; font-size: 16px; cursor: pointer; }
+.complete .tabs button.on { color: var(--gold); background: #1a140c; border-color: #5a4526; }
+.complete .legend { font-size: 13px; }
+.complete .tallies { font-size: 12px; display: inline-flex; gap: 10px; flex-wrap: wrap; }
+.complete .tallies .t { color: var(--muted); white-space: nowrap; }
+.complete .tallies .t.full { color: #9fb58a; }
+.complete ul.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px; margin: 6px 0 12px; padding: 0; list-style: none; }
+.complete li.card { display: flex; gap: 10px; padding: 8px; background: #120d07; border: 1px solid #3a2c18; border-radius: 4px; min-width: 0; }
+.complete li.card[hidden] { display: none; }
+.complete .card .icon { position: static; left: auto; flex: 0 0 64px; width: 64px; height: 64px; background: #241c12; border: 1px solid #5a4526; border-radius: 3px; }
+.complete .card canvas.icon.missing { opacity: 0.3; }
+.complete .card span.icon { display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.complete .card .body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.complete .card .head { display: flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline; }
+.complete .card .name { color: var(--gold); font-size: 15px; }
+.complete .card .text { margin: 0; font-size: 13px; color: var(--text); white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }
+.complete .card .text.open { display: block; -webkit-line-clamp: unset; }
+.complete .card .marks { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 12px; align-items: center; margin-top: auto; }
+.complete .card .m { white-space: nowrap; }
+.complete .card .m.yes { color: #7fc76a; }
+.complete .card .m.half { color: var(--gold); }
+.complete .card .m.no { color: #e07a5f; }
+.complete .card .m.none { color: #6b5d48; }
+.complete li.card .play { margin-left: 0; }
+.complete .legend { margin-left: 8px; white-space: normal; }
+.complete .legend span { margin-right: 10px; }
+.complete .done { color: #7fc76a; }
+.complete .part { color: var(--gold); }
+.complete .todo { color: #d9826a; }
+.complete .unknown { color: var(--muted); }
+.complete .total { display: flex; align-items: center; gap: 10px; margin: 10px 0; flex-wrap: wrap; }
+.complete .tools { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 10px 0 14px; position: sticky; top: 0; background: var(--bg, #120d07); padding: 6px 0; z-index: 1; }
+.complete .tools input { flex: 1 1 220px; min-width: 0; background: #241c12; color: var(--text); border: 1px solid #5a4526; border-radius: 3px; padding: 6px 8px; font: inherit; }
+.complete .tools button { background: #3a2c18; color: var(--text); border: 1px solid #7a5d30; border-radius: 3px; padding: 5px 10px; font: inherit; cursor: pointer; }
+.complete .tools .filter { display: inline-flex; }
+.complete .tools .filter button { border-radius: 0; }
+.complete .tools .filter button:first-child { border-radius: 3px 0 0 3px; }
+.complete .tools .filter button:last-child { border-radius: 0 3px 3px 0; }
+.complete .tools button.on { background: #7a5d30; color: #fff; }
+.complete details.group { border: 1px solid #5a4526; border-radius: 4px; margin: 8px 0; background: #1a140c; }
+.complete details.group > summary { padding: 10px 12px; font-size: 17px; color: var(--gold); }
+.complete details.group > *:not(summary) { margin-left: 12px; margin-right: 12px; }
+.complete details.section { border-top: 1px solid #3a2c18; }
+.complete details.section > summary { padding: 7px 4px; }
+.complete summary { cursor: pointer; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; list-style: none; }
+.complete summary::-webkit-details-marker { display: none; }
+.complete summary .name::before { content: "▸"; color: var(--muted); display: inline-block; width: 16px; }
+.complete details[open] > summary > .name::before { content: "▾"; }
+.complete summary .name { min-width: 150px; }
+.complete .count { font-size: 13px; color: var(--text); min-width: 56px; text-align: right; }
+.complete .stack { display: inline-flex; width: 160px; height: 10px; border: 1px solid #5a4526; border-radius: 5px; overflow: hidden; background: #241c12; }
+.complete .stack div.done { background: #5f9e4e; }
+.complete .stack div.part { background: var(--gold); }
+.complete .stack div.todo { background: #a65a45; }
+.complete .stack div.unknown { background: #555; }
+.complete .pct { font-size: 12px; color: var(--muted); min-width: 34px; }
+.complete .rest { font-size: 12px; }
+.complete .how { font-size: 13px; margin: 0 0 6px; }
+.complete li.card { break-inside: avoid; color: var(--text); }
+.complete li.card.todo, .complete li.card.part { color: var(--text); }
+.complete li.card .note { display: block; font-size: 12px; color: var(--muted); }
+.complete li.card .play { margin-left: 8px; font-size: 12px; color: var(--gold); border: 1px solid #7a5d30; border-radius: 3px; padding: 0 6px; text-decoration: none; }
+@media (hover: hover) { .complete li.card .play:hover { background: #3a2c18; } }
+.complete li.card .note.ai { color: #9fb58a; }
+.complete li.card .note.ai.unused { color: #d9a26a; }
+.complete li.card .note.judged .jok { color: #9fb58a; }
+.complete li.card .note.judged .jbad { color: #e07a5f; }
+.complete li.done .icon { color: #7fc76a; }
+.complete li.part .icon { color: var(--gold); }
+.complete li.todo .icon { color: #d9826a; }
+.complete li.unknown .icon { color: var(--muted); }
+@media (max-width: 560px) {
+  .complete .stack { width: 90px; }
+  .complete summary .name { min-width: 0; flex: 1 1 100%; }
+  .complete ul.cards { grid-template-columns: 1fr; }
+  .complete .card .icon { flex-basis: 48px; width: 48px; height: 48px; }
+  .complete .tile .big { font-size: 22px; }
+}
+/* Settings (chrome/settingsWindow.ts): in front of everything but the menu, which closes as it opens. */
+.optionsPanel { top: 52px; right: auto; left: 50%; transform: translateX(-50%); width: min(400px, calc(var(--page-w) - 24px)); max-height: calc(var(--page-h) - 64px); z-index: 25; }
+@media (pointer: coarse), (max-height: 560px) { .optionsPanel { font-size: 16px; } .optionsPanel .row { min-height: 40px; } .optionsPanel input[type="checkbox"] { width: 22px; height: 22px; vertical-align: middle; } }
+.optionsPanel input[type="range"] { flex: 1; accent-color: var(--gold); }
+.optionsPanel select { max-width: 60%; flex-shrink: 0; }
+.newBuild small { display: block; font-size: 13px; color: #d8c8a0; margin-top: 3px; }
+.newBuild { position: fixed; top: calc(10px + var(--safe-top)); max-width: calc(var(--page-w) - 24px - var(--safe-left) - var(--safe-right)); left: 50%; transform: translateX(-50%); z-index: 40; background: #3a2c18; color: var(--gold); border: 2px solid var(--gold); border-radius: 4px; padding: 6px 14px; font: 16px Georgia, serif; cursor: pointer; box-shadow: 0 0 12px rgba(0, 0, 0, 0.8); }
+.replies {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  width: min(420px, calc(var(--page-w) - 24px));
+  max-height: calc(var(--page-h) * 0.45);
+  overflow-y: auto;
+  padding: 10px 12px;
+  background: var(--panel-bg);
+  border: 2px solid #b08a40;
+  outline: 1px solid #000;
+  border-radius: 2px;
+  font-size: 13px;
+  z-index: 20;
+}
+.replies .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; color: var(--gold); }
+.replies .head button { background: #3a2c18; color: var(--text); border: 1px solid #7a5d30; border-radius: 3px; padding: 2px 8px; font: inherit; }
+.replies .reply { padding: 4px 0; border-top: 1px solid #3a2c18; }
+.replies .when { color: var(--muted); font-size: 11px; margin-right: 4px; }
+
+.advMessage {
+  position: fixed;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  width: min(360px, calc(var(--page-w) - 32px));
+  padding: 16px 18px 12px;
+  background: rgba(24, 18, 10, 0.97);
+  border: 2px solid var(--gold);
+  border-radius: 4px;
+  text-align: center;
+  z-index: 15;
+}
+.advMessage[hidden] { display: none; }
+/* "Add a device" (feedback/dialogs.ts): the QR code beside the words where there's room. */
+.advMessage.deviceBox { top: 50%; width: min(640px, calc(var(--page-w) - 32px)); max-height: calc(var(--page-h) - 16px); box-sizing: border-box; overflow: auto; }
+.deviceCols { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; justify-content: center; }
+.deviceCols > div { flex: 1 1 260px; }
+.advMessage p { margin: 0 0 12px; line-height: 1.4; }
+.advMessage button { background: #3a2c18; color: var(--text); border: 1px solid #7a5d30; border-radius: 3px; padding: 4px 22px; font: inherit; cursor: pointer; }
+.dwellingDialog { width: min(520px, calc(var(--page-w) - 32px)); text-align: left; }
+.dwellingDialog .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid #3a2c18; }
+.dwellingDialog input { width: 64px; background: #1a130a; color: var(--text); border: 1px solid #7a5d30; margin-right: 6px; font: inherit; }
+.dwellingDialog [data-close] { margin-top: 10px; }
+.spellbook { width: min(560px, calc(var(--page-w) - 32px)); }
+.spellbook .spells { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; margin: 8px 0 12px; }
+.spellbook .spells button { background: #3a2c18; color: var(--text); border: 1px solid #7a5d30; border-radius: 3px; padding: 6px 4px; font: inherit; cursor: pointer; }
+.spellbook .spells button:disabled { opacity: 0.45; cursor: default; }
+
+/* ---- touch screens and small windows ------------------------------------------------ */
+html, body { height: 100dvh; overscroll-behavior: none; }
+/* Phones with a notch or rounded corners: keep the game inside the safe area. */
+body { padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left); }
+/* The page's own corner buttons (☰, Feedback): off the camera's band only where the camera is (2026-11-03: the
+   whole top strip given up to a punch hole in its middle, then a bar below it for ☰ and Feedback alone). A touch
+   screen that isn't an iPhone (whose clock and battery are in those corners) puts them up into the corners the camera
+   leaves free (ui/screen.ts cornersFree; ☰ → Layouts says where the camera is). On the body: --safe-* turn with it. */
+body { --btn-top-l: var(--safe-top); --btn-top-r: var(--safe-top); --btn-left: var(--safe-left); --btn-right: var(--safe-right); }
+body.cornersFree.camMid { --btn-top-l: 0px; --btn-top-r: 0px; --btn-left: 0px; --btn-right: 0px; }
+body.cornersFree.camLeft { --btn-top-r: 0px; }
+body.cornersFree.camRight { --btn-top-l: 0px; }
+#stage canvas { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+#menuToggle, #fullscreen { display: none; }
+/* Desktops: the menu's button in the top-left corner. */
+@media (pointer: fine) and (min-height: 561px) { #menuToggle { display: block; } }
+@media (pointer: coarse), (max-height: 560px) {
+  /* The game gets the whole screen; the page menu opens from a corner button (chrome/pageMenu.ts puts it under the button). */
+  #toolbar { top: calc(52px + var(--btn-top-l)); max-height: calc(var(--page-h) - 60px - var(--safe-top) - var(--safe-bottom)); font-size: 16px; }
+  /* A finger's height (44 CSS px), no more: the top level fits a phone held sideways. */
+  #toolbar .item { min-height: 44px; line-height: 1.2; }
+  #toolbar select { min-height: 44px; }
+  #toolbar nav { line-height: 2.6; }
+  #menuVersion { font-size: 13px; }
+  body.menuOpen #menuToggle { border-color: var(--gold); background: #4a3820; }
+  #menuToggle, #fullscreen {
+    display: block;
+    position: fixed;
+    top: calc(6px + var(--btn-top-l));
+    z-index: 21;
+    background: rgba(36, 28, 18, 0.85);
+    color: var(--gold);
+    border: 1px solid #7a5d30;
+    border-radius: 4px;
+    font: 18px/1 Georgia, serif;
+    padding: 6px 10px;
+  }
+  #menuToggle { left: calc(6px + var(--btn-left)); }
+  #fullscreen { left: calc(52px + var(--btn-left)); }
+  /* Upright, the map runs up under the cutout's band too (a punch-hole camera in the corner of the status bar), not a
+     dead strip above the game; the layouts keep clear of the round buttons (screen.ts pageButtons) and of the foot's
+     inset (the page still stops above it). */
+  body.portrait { padding-top: 0; }
+  /* Top right, clear of the map's buttons along the bottom (map/mobileHud.ts keeps that corner free). */
+  #feedback { right: calc(6px + var(--btn-right)); top: calc(6px + var(--btn-top-r)); bottom: auto; }
+}
+/* A small desktop window (or a big zoom): top right is the minimap: Feedback beside the corner button instead. */
+@media (pointer: fine) and (max-height: 560px) {
+  #feedback { right: auto; left: 98px; align-items: flex-start; }
+  #feedback #fbToggle { opacity: 0.6; }
+  /* Open on a touch screen: a slim strip along the top beside the button, so the keyboard (which
+     takes the bottom half in landscape) leaves the game visible under it. */
+  #feedback.open { left: calc(150px + var(--safe-left)); flex-direction: row-reverse; align-items: flex-start; transform: none !important; }
+  #feedback.open #fbToggle { opacity: 1; }
+  #feedback.open #fbForm { flex: 1; width: auto; flex-direction: row; flex-wrap: wrap; align-items: center; padding: 6px; gap: 6px; }
+  #feedback.open #fbText { flex: 1 1 220px; height: 44px; resize: none; font-size: 16px; }
+  #feedback.open #fbGrip { display: none; }
+  #feedback.open #fbStatus:empty { display: none; }
+}
+/* The game is landscape: say so, but don't get in the way (unless it is already drawn sideways). */
+body:where(.coarse.pageUp):not(.sideways):not(.portrait):not(.loading):not(.catalogPage)::after {
+  content: "Turn your device sideways for a bigger view";
+  position: fixed;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  background: rgba(36, 28, 18, 0.9);
+  color: var(--gold);
+  border: 1px solid #7a5d30;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 13px;
+  pointer-events: none;
+  z-index: 30;
+}
+@media (pointer: coarse), (max-height: 560px) {
+  .replies { max-height: 45dvh; overflow-y: auto; font-size: 15px; max-width: min(360px, 60vw); bottom: calc(60px + var(--safe-bottom)); }
+}
+
+/* ---- New Game on touch screens (ui/mobileScenarios.ts) ------------------------------- */
+.scenarioPage {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  background: #120e08;
+  color: var(--text);
+  font: 16px/1.35 Georgia, serif;
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+}
+.scenarioPage button {
+  background: #3a2c18; color: var(--text); border: 1px solid #7a5d30; border-radius: 4px; padding: 8px 12px; font: inherit; min-height: 40px;
+}
+.scenarioPage button.on { border-color: var(--gold); color: var(--gold); background: #4a3820; }
+.scHead { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px; border-bottom: 1px solid #5a4526; }
+.scHead b { color: var(--gold); font-size: 20px; font-weight: normal; }
+.scHead input { flex: 1 1 140px; min-width: 120px; min-height: 40px; background: #1a130a; color: var(--text); border: 1px solid #7a5d30; border-radius: 4px; padding: 0 10px; font: inherit; }
+.scHead .chips { display: flex; gap: 4px; }
+.scBody { flex: 1; display: flex; min-height: 0; }
+.scList { list-style: none; margin: 0; padding: 0; flex: 1 1 45%; overflow-y: auto; border-right: 1px solid #5a4526; }
+.scList li { padding: 10px 12px; border-bottom: 1px solid #2a2014; display: flex; flex-direction: column; cursor: pointer; }
+.scList li.on { background: #3a2c18; }
+.scList .name { font-size: 18px; color: var(--gold); }
+.scList .meta, .scCard .meta { color: var(--muted); font-size: 14px; }
+.scCard { flex: 1 1 55%; overflow-y: auto; padding: 8px 16px 16px; }
+.scCard h2 { color: var(--gold); font-weight: normal; margin: 4px 0; }
+.scCard .desc { white-space: pre-line; }
+.scCard .diff { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.scCard .begin { font-size: 20px; color: var(--gold); padding: 10px 28px; }
+:where(body.pageUp) .scBody { flex-direction: column; } :where(body.pageUp) .scList { border-right: 0; border-bottom: 1px solid #5a4526; }
+
+/* Feedback on touch screens (feedback/touch.ts): the frozen screen to mark (draw or boxes),
+   then, typing, the same picture as big as the room above the keyboard allows, the one line of words
+   floating over it, see-through and dragged by its grip (2026-10-27: the picture must stay readable). */
+#fbPick { position: fixed; inset: 0; z-index: 40; background: #000; display: flex; flex-direction: column; }
+#fbPick canvas { flex: 1 1 auto; min-height: 0; width: 100%; touch-action: none; display: block; }
+#fbPick .fbBar { position: fixed; left: 50%; top: calc(8px + var(--safe-top)); transform: translateX(-50%); display: flex; gap: 8px; align-items: center; background: rgba(36, 28, 18, 0.92); border: 1px solid #7a5d30; border-radius: 4px; padding: 6px 10px; white-space: nowrap; }
+#fbPick button { min-height: 40px; font-size: 16px; background: #3a2c18; color: var(--text); border: 1px solid #7a5d30; border-radius: 4px; padding: 0 12px; font-family: inherit; }
+#fbPick .fbType { display: none; }
+/* Typing: the note fills what the keyboard leaves (--vv-top / --vv-h, the visual viewport), the picture all of it. */
+#fbPick.typing { top: var(--vv-top, 0px); bottom: auto; height: var(--vv-h, 100%); background: #000 !important; }
+#fbPick.typing canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* The marking tools: a small see-through column in the top corner. */
+#fbPick.typing .fbBar { left: auto; right: calc(4px + max(var(--safe-right), var(--nav-right, 0px))); top: calc(4px + var(--safe-top)); transform: none; position: absolute; flex-direction: column; gap: 4px; padding: 3px; opacity: 0.75; }
+#fbPick.typing .fbBar [data-write] { display: none; }
+#fbPick.typing .fbBar { background: none !important; box-shadow: none !important; }
+#fbPick.typing .fbBar button.ico.glyph { width: 36px !important; height: 36px !important; }
+#fbPick.typing.noMarks .fbBar [data-undo] { display: none; }
+/* The words: one see-through row at the foot, [grip | words | ✓ | ✕]; the grip drags it anywhere (fbStripAt). */
+#fbPick.typing .fbType { position: absolute; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; left: 0; bottom: 4px; transform: translate(var(--strip-x, 4px), var(--strip-y, 0px)); padding: 3px; background: rgba(20, 12, 4, 0.55); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6); box-sizing: border-box; }
+#fbPick .fbType form { display: flex; gap: 4px; flex: 1 1 0; min-width: 0; align-items: center; }
+#fbPick .fbType input { flex: 1; min-width: 0; min-height: 40px; font-size: 16px; background: #120e08; color: var(--text); border: 1px solid #7a5d30; border-radius: 4px; padding: 0 8px; }
+#fbPick.typing .fbType form input[type="text"] { background: rgba(0, 0, 0, 0.45) !important; }
+#fbPick.typing .fbType button.ico.art { height: 36px !important; width: calc(36px * var(--ico-w, 64) / var(--ico-h, 30)) !important; min-height: 0 !important; }
+/* Cancel on the line is the small ✕ (Back and Escape cancel too): the words keep the width. */
+#fbPick.typing .fbType button.ico[data-cancel] { width: 40px !important; height: 40px !important; background: rgba(36, 28, 18, 0.85) !important; border: 1px solid #7a5d30 !important; border-radius: 4px; }
+#fbPick.typing .fbType button.ico.art[data-cancel]::before { content: attr(data-glyph); }
+#fbPick.typing .fbType button.ico.glyph { width: 40px !important; height: 40px !important; }
+#fbPick .fbGrip { flex: none; width: 22px; height: 40px; display: grid; place-items: center; color: var(--gold); font: 18px/1 sans-serif; touch-action: none; cursor: grab; opacity: 0.8; }
+#fbPick .fbSaid { color: var(--muted); font-size: 14px; }
+#fbPick.typing .fbSaid { flex: 1 0 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
+#fbPick.typing .fbSaid:empty { display: none; }
+.fbFlash { position: fixed; left: 50%; top: calc(12px + var(--safe-top)); transform: translateX(-50%); z-index: 41; background: rgba(36, 28, 18, 0.95); color: var(--gold); border: 1px solid #7a5d30; border-radius: 4px; padding: 8px 14px; font-size: 16px; pointer-events: none; }
+@media (pointer: fine) { .fbSetting { display: none; } }
+/* The Feedback button's modes, shown while it is held (feedback/button.ts): slide onto one and let go, or tap it. */
+#fbModes { position: fixed; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: min(320px, calc(100vw - 8px)); padding: 8px; background: rgba(36, 28, 18, 0.96); border: 1px solid #7a5d30; border-radius: 10px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6); touch-action: none; }
+/* (Held and slid to a mode: no scrolling or zooming the page meanwhile.) */
+#fbToggle { touch-action: none; }
+#fbModes .fbModesHint { flex: 1 1 100%; text-align: center; color: var(--gold, #e8c46a); font: 14px/1.3 Georgia, serif; }
+#fbModes button { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 76px; min-height: 64px; padding: 8px 6px; color: var(--gold, #e8c46a); background: rgba(0, 0, 0, 0.35); border: 1px solid #7a5d30; border-radius: 8px; font: 15px/1.1 Georgia, serif; cursor: pointer; }
+#fbModes button svg { width: 28px; height: 28px; }
+#fbModes button.now { border-color: var(--gold, #e8c46a); box-shadow: inset 0 0 0 1px var(--gold, #e8c46a); }
+#fbModes button.over { background: rgba(232, 196, 106, 0.25); }
+@media (hover: hover) { #fbModes button:hover { background: rgba(232, 196, 106, 0.25); } }
+/* Is an agent reading feedback? A dot on the Feedback button (feedback/listening.ts). */
+#fbToggle.agentOn::before, #fbToggle.agentOff::before { content: ""; position: absolute; top: 3px; right: 3px; width: 8px; height: 8px; border-radius: 50%; }
+#fbToggle.agentOn::before { background: #4caf50; box-shadow: 0 0 4px #4caf50; }
+#fbToggle.agentOff::before { background: #777; }
+/* An unsent draft waits: a gold dot at the foot of the round button. */
+#fbToggle.draft::after { content: ""; position: absolute; bottom: 3px; right: 3px; width: 9px; height: 9px; border-radius: 50%; background: var(--gold, #e8c46a); box-shadow: 0 0 4px #000; }
+
+/* What a note's words point at (feedback/pointAt.ts): a gold frame over the game, its name above it. */
+.pointFrame { position: fixed; z-index: 70; border: 3px solid #ffd34a; border-radius: 3px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6); pointer-events: none; transition: left 0.12s, top 0.12s, width 0.12s, height 0.12s; }
+.pointFrame span { position: absolute; left: -3px; bottom: calc(100% + 4px); white-space: nowrap; max-width: calc(100vw - 16px); overflow: hidden; text-overflow: ellipsis; background: rgba(255, 233, 168, 0.95); color: #1a1206; font: 600 15px/1.3 sans-serif; padding: 2px 8px; border-radius: 6px; }
+.pointFrame.tipInside span { bottom: auto; top: 2px; left: 2px; }
+/* Voice notes (feedback/voiceNote.ts): the words faint along the bottom, a tick when sent. */
+#fbVoice.on { background: #7a1f1f; }
+/* Touch screens: the mic beside Feedback in the top row (below it, it reached into a sideways
+   phone's right-hand 72 px, Android's navigation bar), big enough for a thumb. */
+@media (pointer: coarse), (max-height: 560px) {
+  #feedback:not(.open) { flex-direction: row; align-items: flex-start; }
+  #feedback #fbVoice { min-width: 48px; min-height: 40px; font-size: 20px; }
+  /* One-handed on the right: the menu and full screen buttons one mic further along. */
+  body.oneHandRight:has(#fbVoice:not([hidden])) #menuToggle { right: calc(150px + var(--safe-right)); }
+  body.oneHandRight:has(#fbVoice:not([hidden])) #fullscreen { right: calc(196px + var(--safe-right)); }
+}
+#voiceNote { position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 60; max-width: min(92vw, 720px); display: flex; gap: 8px; align-items: flex-end; pointer-events: none; }
+#voiceNote .vnText { background: rgba(0, 0, 0, 0.45); color: #fff; font: 600 17px/1.35 sans-serif; padding: 8px 12px; border-radius: 10px; text-shadow: 0 1px 2px #000; }
+#voiceNote .vnInterim { opacity: 0.6; }
+/* ✕ at one end, the words, ✓ at the other (2026-10-25: side by side they were too easy to mix up);
+   one-handed on the left, ✓ goes to the left (the thumb's side) and ✕ to the far right. */
+#voiceNote { width: min(92vw, 720px); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 12px; align-items: end; }
+#voiceNote .vnEndCancel { grid-area: 1 / 1; }
+#voiceNote .vnText { grid-area: 1 / 2; }
+#voiceNote .vnEndSend { grid-area: 1 / 3; }
+body.oneHandLeft #voiceNote .vnEndCancel { grid-area: 1 / 3; }
+body.oneHandLeft #voiceNote .vnEndSend { grid-area: 1 / 1; }
+#voiceNote .vnType { grid-area: 3 / 2; justify-self: start; }
+#voiceNote .vnBtns { display: flex; pointer-events: auto; }
+/* The feedback overlay has its own look (the owner): round glass buttons, not the game's art; thumb-sized. */
+#voiceNote .vnBtns button { width: 44px; height: 44px; min-width: 0; padding: 0; border-radius: 50%; font: 700 21px/1 sans-serif; color: #fff; background: rgba(18, 24, 40, 0.82); border: 1.5px solid rgba(255, 255, 255, 0.55); box-shadow: 0 1px 6px rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); display: grid; place-items: center; }
+#voiceNote .vnBtns .vnSend { color: #7be0a0; border-color: #7be0a0; }
+#voiceNote .vnBtns .vnCancel { color: #ff9a9a; border-color: rgba(255, 154, 154, 0.8); }
+#voiceNote .vnBtns button[hidden] { display: none; }
+/* The time left until it sends by itself: a gold ring filling around the ✓ (2026-10-27; feedback/voiceNote.ts).
+   It sits over the button's edge, outside the touch target, and goes with the ✓ when that hides. */
+#voiceNote .vnEndSend { position: relative; }
+#voiceNote .vnRing { position: absolute; inset: -6px; width: 56px; height: 56px; pointer-events: none; transform: rotate(-90deg); overflow: visible; }
+#voiceNote .vnSend[hidden] + .vnRing { display: none; }
+#voiceNote .vnRing circle { fill: none; stroke-width: 4.5; }
+#voiceNote .vnTrack { stroke: rgba(0, 0, 0, 0.55); }
+#voiceNote .vnArc { stroke: #ffd34a; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset 0.1s linear; filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8)); }
+#voiceNote.sending .vnBtns, #voiceNote.sent .vnBtns, #voiceNote.failed .vnBtns { display: none; }
+/* One thumb: the note sits on the side the hand is on, clear of the right-hand 72 px of a sideways phone. */
+body.oneHandRight #voiceNote { left: auto; right: calc(8px + var(--safe-right)); transform: none; }
+body.oneHandLeft #voiceNote { left: calc(8px + var(--safe-left)); transform: none; }
+@media (max-height: 560px) {
+  body.oneHandRight #voiceNote { right: calc(80px + var(--safe-right)); }
+  /* Centred on a sideways phone: narrow enough that ✓ stays out of the right-hand 72 px. */
+  body:not(.oneHandRight):not(.oneHandLeft) #voiceNote { width: min(calc(100vw - 168px), 720px); }
+}
+#voiceNote.sending .vnText { opacity: 0.8; }
+#voiceNote .vnType { pointer-events: auto; background: #3a2c18; color: var(--text); border: 1px solid #7a5d30; border-radius: 8px; padding: 8px 12px; font: 600 16px sans-serif; white-space: nowrap; }
+/* The owner's page-menu button while players' notes wait for review. */
+#menuToggle.notesWaiting::after { content: ""; position: absolute; top: 4px; right: 4px; width: 9px; height: 9px; border-radius: 50%; background: #e04a3a; box-shadow: 0 0 4px #e04a3a; }
+/* The owner playing as a player (asTesterMode.ts): ☰ wears a small "test" tag; ☰ → Back to owner returns. */
+body.asTester #menuToggle { box-shadow: 0 0 0 2px #3f9a55; }
+body.asTester #menuToggle::before { content: "test"; position: absolute; left: 50%; bottom: -9px; transform: translateX(-50%); padding: 0 4px; font: bold 10px/13px system-ui, sans-serif; color: #fff; background: #3f9a55; border-radius: 3px; pointer-events: none; }
+#voiceNote.sent .vnText { background: rgba(30, 120, 40, 0.85); animation: vnSplash 0.35s ease-out; }
+#voiceNote.failed .vnText { background: rgba(140, 30, 30, 0.85); }
+@keyframes vnSplash { from { transform: scale(1.25); } to { transform: scale(1); } }
+
+/* The welcome and What's new (reels.ts): full-screen cards, a title, a few lines, a demo filling the rest; bubbles
+   along the foot show how far through you are. Upright: one column. Sideways and wide: the words beside the demo. */
+.advMessage.welcome { z-index: 50; top: 50%; box-sizing: border-box; width: min(calc(var(--page-w) - 16px), 1180px); height: min(calc(var(--page-h) - 16px), 900px); max-height: none; padding: 10px 12px 8px; display: flex; flex-direction: column; text-align: left; font-size: 16px; overflow: hidden; }
+.advMessage.welcome h3 { color: var(--gold); margin: 0 0 8px; font-weight: 400; font-size: 20px; }
+.advMessage.welcome p { margin: 0 0 10px; line-height: 1.4; }
+/* (Below the page's own Feedback button in the corner, which stays on top of everything.) */
+.advMessage.welcome .close { position: absolute; top: 56px; right: 6px; margin: 0; padding: 2px 12px; font-size: 22px; line-height: 1.2; z-index: 2; }
+.welcomeShade { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 49; }
+.advMessage.welcome .inApp { background: rgba(140, 90, 20, 0.35); border-left: 3px solid var(--gold); padding: 6px 8px; }
+.reelBody { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.reelCard { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+/* The reel's one game, laid over the showing card's room (howto.ts place); hidden on a card without a demo and while it loads. */
+.reel > .mvStage { position: absolute; z-index: 1; margin: 0; box-sizing: border-box; aspect-ratio: auto; transition: width 0.5s ease, height 0.5s ease, left 0.5s ease, top 0.5s ease; }
+.reel > .mvStage.loading { visibility: hidden !important; }
+.reelText { flex: 0 1 auto; min-height: 0; overflow-y: auto; }
+.reel:not(.withDemo) .reelCard { justify-content: center; max-width: 640px; width: 100%; margin: 0 auto; }
+.reel:not(.withDemo) .reelText { font-size: 17px; }
+.reelActs { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 8px; }
+.reelActs button { min-height: 40px; padding: 6px 16px; }
+.reelActs .quick { color: var(--gold); }
+.reelDemo { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
+/* The Feedback button's own icon inside the words: the round button as the page draws it. */
+.fbIco { display: inline-flex; align-items: center; justify-content: center; width: 1.6em; height: 1.6em; vertical-align: -0.45em; border-radius: 50%; border: 1px solid #7a5d30; background: rgba(36, 28, 18, 0.85); color: var(--gold); }
+.fbIco svg { width: 62%; height: 62%; }
+.reelFoot { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; padding-top: 8px; }
+.reelFoot button { margin: 0; min-height: 36px; min-width: 44px; padding: 4px 12px; }
+.reelFoot button[disabled] { visibility: hidden; }
+.reelText .sign { text-align: right; font-style: italic; color: var(--gold); }
+/* The slider's small arrows (igpcrdiv), not the tall paging ones: big enough to hit, the art kept square. */
+.reelFoot button.ico.art:is([data-ico=sleft], [data-ico=sright]) { width: 32px !important; height: 32px !important; min-width: 0 !important; min-height: 0 !important; }
+@media (pointer: coarse) { .reelFoot button.ico.art:is([data-ico=sleft], [data-ico=sright]) { width: 40px !important; height: 40px !important; } }
+.reelFoot .bubbles { flex: 1; display: flex; gap: 5px; justify-content: center; align-items: center; }
+.reelFoot .bubbles button { flex: 0 1 34px; min-width: 10px; min-height: 0; height: 22px; padding: 0; border: 0; background: none; position: relative; }
+.reelFoot .bubbles button::after { content: ""; position: absolute; left: 0; right: 0; top: 8px; height: 6px; border-radius: 3px; background: rgba(0, 0, 0, 0.55); box-shadow: 0 0 0 1px #000; }
+.reelFoot .bubbles button.done::after { background: #8a6d2a; }
+.reelFoot .bubbles button.on::after { background: var(--gold); }
+@media (min-aspect-ratio: 6/5) {
+  .reel.withDemo .reelBody { display: grid; grid-template-columns: minmax(200px, 30%) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto auto; column-gap: 14px; }
+  .reel.withDemo .reelCard { display: contents; }
+  .reel.withDemo .reelCard > h3 { grid-column: 1; grid-row: 1; padding-right: 0; text-align: left; }
+  .reel.withDemo .reelText { grid-column: 1; grid-row: 2; }
+  .reel.withDemo .reelActs { grid-column: 1; grid-row: 3; }
+  .reel.withDemo .reelFoot { grid-column: 1; grid-row: 4; }
+  .reel.withDemo .reelDemo { grid-column: 2; grid-row: 1 / 5; min-width: 0; min-height: 0; }
+  .reel.withDemo .reelDemo { padding-top: 46px; }
+}
+/* (Clear of the page's ☰ in the corner, on a phone or tablet the card's own title would sit under it.) */
+@media (min-aspect-ratio: 6/5) and ((pointer: coarse) or (max-height: 560px)) { .reel.withDemo .reelCard > h3 { padding-left: 36px; } }
+/* A demo on a card: the frame as big as the card allows, the layout chips and buttons small. */
+.reelDemo .mvHost { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; margin: 0; }
+.reelDemo .mvFit { flex: 1 1 0; min-height: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.mvLoop .mvFit { min-height: 60px; }
+.reelDemo .mvCap { min-height: 2.6em; margin: 4px 0 0; font-size: 15px; }
+/* Playing over and over on a card: no Back / Next or beat dots, the pause button at the caption's end. */
+.mvHost.mvLoop { position: relative; }
+.mvLoop .mvNav [data-back], .mvLoop .mvNav [data-next], .mvLoop .mvDots { display: none; }
+.mvLoop .mvBar { position: absolute; right: 0; bottom: 0; margin: 0; }
+.mvLoop .mvCap { padding-right: 48px; }
+.reelDemo .mvNav button { min-height: 32px; min-width: 40px; padding: 2px 10px; }
+@media (max-height: 480px) {
+  .advMessage.welcome { padding: 6px 10px 4px; }
+  .advMessage.welcome h3 { font-size: 17px; margin-bottom: 4px; }
+  .advMessage.welcome p { font-size: 15px; margin-bottom: 6px; line-height: 1.3; }
+  .reelDemo .mvCap { min-height: 2.5em; font-size: 15px; line-height: 1.25; }
+  .reelFoot { padding-top: 4px; }
+}
+.tourSpot { animation: tourGlow 1.2s ease-in-out infinite alternate; border-color: var(--gold) !important; }
+@keyframes tourGlow { from { box-shadow: 0 0 2px 1px rgba(232, 196, 106, 0.4); } to { box-shadow: 0 0 14px 5px rgba(232, 196, 106, 0.95); } }
+
+/* "Play offline" (offline.ts): the parts in a ruled list (check box, name, size), the button beside its bar, and the
+   clearing apart at the foot. */
+.offlinePanel .parts { border: 1px solid #5a4526; border-radius: 4px; background: rgba(0, 0, 0, 0.25); margin: 8px 0; }
+.offlinePanel .part { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 6px 10px; cursor: pointer; }
+.offlinePanel .part + .part { border-top: 1px solid rgba(201, 160, 70, 0.25); }
+.offlinePanel .part input { margin: 0; accent-color: var(--gold); }
+.offlinePanel .part .name { line-height: 1.25; }
+.offlinePanel .part .size { color: var(--muted); text-align: right; white-space: nowrap; line-height: 1.2; }
+.offlinePanel .part .size small { font-size: 0.8em; }
+.offlinePanel .part.all .size { color: #9fd49f; }
+.offlinePanel .go { display: flex; align-items: center; gap: 12px; margin: 10px 0 4px; }
+.offlinePanel .meter { flex: 1; min-width: 0; }
+.offlinePanel .meter .sub { margin: 2px 0 0; }
+.offlinePanel .bar { height: 14px; background: #241c12; border: 1px solid #5a4526; border-radius: 7px; overflow: hidden; }
+.offlinePanel .bar > div { height: 100%; min-width: 2px; background: linear-gradient(90deg, #7a5d30, var(--gold)); transition: width 0.3s; }
+.offlinePanel .warn { color: #e8a060; }
+.offlinePanel .danger { display: flex; justify-content: flex-start; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(201, 160, 70, 0.25); }
+
+/* What deletes or gives something up for good (htmlIcons.ts "remove"): its words after a bin, red-brown, never the
+   cancel sign that closes a window. */
+button.removeBtn { color: #f0b8a8 !important; border-color: #8a3a2a !important; background: rgba(90, 24, 16, 0.55) !important; }
+button.removeBtn::before { content: attr(data-glyph); margin-right: 6px; }
+button.removeBtn:disabled { opacity: 0.5; }
+
+/* One-handed play (screen.ts oneHand): the page's corner buttons on the thumb's side. */
+@media (pointer: coarse), (max-height: 560px) {
+  /* In the top row (which pages and the HUD keep clear), beside the Feedback button. */
+  body.oneHandRight #menuToggle { left: auto; right: calc(96px + var(--safe-right)); }
+  body.oneHandRight #fullscreen { left: auto; right: calc(142px + var(--safe-right)); }
+  body.oneHandLeft #feedback { right: auto; left: calc(98px + var(--safe-left)); align-items: flex-start; }
+}
+/* Phones: the tools would take a third of the screen stuck at the top; let them scroll away. */
+@media (max-width: 600px) { .complete .tools { position: static; } }
+
+/* Held upright (ui/turn.ts): which layout is on and a tap to the other, for a few seconds. */
+#turnNote {
+  position: fixed;
+  left: 50%;
+  /* At the top, under the page's buttons: not over a window open in the middle (a level-up's choice). */
+  top: calc(56px + var(--safe-top, 0px));
+  transform: translateX(-50%);
+  z-index: 30;
+  width: min(88vw, 420px);
+  background: rgba(36, 28, 18, 0.94);
+  color: var(--gold);
+  border: 1px solid #7a5d30;
+  border-radius: 4px;
+  padding: 12px 14px;
+  font: 17px/1.35 Georgia, serif;
+  text-align: center;
+}
+#turnNote button { display: block; margin: 10px auto 0; font: 18px Georgia, serif; padding: 10px 16px; color: var(--gold); background: #3a2c18; border: 1px solid #a07a40; border-radius: 4px; }
+/* A phone held sideways: the Feedback corner (and one-handed, the buttons beside it) out of the
+   right-hand 72 px, where Android's navigation bar sits. */
+:where(body.coarse.pageLow) #feedback:not(.open) { right: calc(78px + var(--safe-right)); }
+body:where(.coarse.pageLow).oneHandRight #menuToggle { right: calc(168px + var(--safe-right)); }
+body:where(.coarse.pageLow).oneHandRight #fullscreen { right: calc(214px + var(--safe-right)); }
+body:where(.coarse.pageLow).oneHandRight:has(#fbVoice:not([hidden])) #menuToggle { right: calc(222px + var(--safe-right)); }
+body:where(.coarse.pageLow).oneHandRight:has(#fbVoice:not([hidden])) #fullscreen { right: calc(268px + var(--safe-right)); }
+/* In a battle the top right is the enemy hero's: Feedback joins the menu and full screen buttons
+   over the left-hand column (battle/touchLayout.ts starts its message under them). */
+body:where(.coarse.pageLow).inBattle:not(.oneHandLeft):not(.oneHandRight) #feedback:not(.open) { right: auto; left: calc(98px + var(--safe-left)); }
+/* The main menu: its buttons run down the right, the top one under Feedback there: Feedback beside the corner buttons. */
+body:where(.coarse.pageLow).menuPage #feedback:not(.open) { right: auto; left: calc(98px + var(--safe-left)); }
+/* The main menu's buttons are a column down the right: the corner buttons stay at the left there. */
+body:where(.coarse.pageLow).menuPage.oneHandRight #menuToggle { right: auto; left: calc(6px + var(--safe-left)); }
+body:where(.coarse.pageLow).menuPage.oneHandRight #fullscreen { right: auto; left: calc(52px + var(--safe-left)); }
+/* A battle: beside Feedback they'd cover the turn queue over the field; the far side's top corner is free
+   (the battle's own Menu button stays on the thumb's side). */
+body:where(.coarse.pageLow).inBattle.oneHandRight #menuToggle, body:where(.coarse.pageLow).inBattle.oneHandRight:has(#fbVoice:not([hidden])) #menuToggle { right: auto; left: calc(6px + var(--safe-left)); }
+body:where(.coarse.pageLow).inBattle.oneHandRight #fullscreen, body:where(.coarse.pageLow).inBattle.oneHandRight:has(#fbVoice:not([hidden])) #fullscreen { right: auto; left: calc(52px + var(--safe-left)); }
+/* Multiplayer: the turn clock over the top of the map, chat lines down its left side (mpOverlay.ts). */
+.mpClock {
+  position: fixed; top: 84px; left: 50%; transform: translateX(-50%); z-index: 4; pointer-events: none;
+  padding: 3px 10px; background: rgba(24, 18, 10, 0.85); border: 1px solid #7a5d30; border-radius: 3px;
+  color: var(--gold); font-size: 15px; white-space: nowrap;
+}
+.mpClock[hidden] { display: none; }
+.mpClock.low { color: #ff6a4a; }
+.mpChat { position: fixed; top: 120px; left: 16px; z-index: 4; pointer-events: none; max-width: min(420px, calc(var(--page-w) - 120px)); }
+.mpChat div { margin: 2px 0; padding: 2px 8px; background: rgba(24, 18, 10, 0.8); color: #f0e6c8; font-size: 15px; border-radius: 3px; }
+.mpChat div.host { color: var(--gold); font-style: italic; }
+/* Phones sideways: the chat lines under the clock, clear of the hero list on the left. */
+:where(body.pageShort) .mpChat { left: 50%; transform: translateX(-50%); top: 118px; } :where(body.pageShort) .mpClock { top: 46px; }
+@media (max-width: 480px) { .mpChat { left: 50%; transform: translateX(-50%); } }
+
+/* A player's own notes (feedback/myNotes.ts): picture, status, summary, the words, the answer. */
+.replies.myNotes { left: 50%; top: 50%; bottom: auto; transform: translate(-50%, -50%); width: min(560px, calc(100vw - 24px)); max-width: none; max-height: min(80dvh, 640px); overflow-y: auto; font-size: 15px; z-index: 45; }
+.myNotes .head { position: sticky; top: -10px; z-index: 2; background: linear-gradient(rgba(16, 11, 5, 0.55), rgba(16, 11, 5, 0.55)), var(--menu-bg, none) repeat, rgb(24, 18, 10); padding: 6px 0; margin-top: -10px; border-bottom: 1px solid #8a6b36; }
+.myNotes .head b, .myNotes .head > span:first-child { color: var(--gold); font-size: 1.25em; }
+.myNotes .head button { padding: 6px 14px; }
+:is(.myNotes, .fromClaude) .note { display: grid; grid-template-columns: 96px 1fr; gap: 10px; padding: 8px 0; border-top: 1px solid #3a2c18; }
+:is(.myNotes, .fromClaude) .note img, :is(.myNotes, .fromClaude) .noShot { width: 96px; height: 60px; object-fit: cover; border: 1px solid #4a3a20; border-radius: 3px; background: #0d0a06; cursor: zoom-in; }
+.myNotes .top { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+.myNotes .st, .myNotes .kind { border-radius: 0; padding: 1px 8px; background: rgba(0, 0, 0, 0.35); border: 1px solid #7a5d30; }
+.myNotes .st-waiting { color: var(--gold); } .myNotes .st-sent { color: #b9d88a; } .myNotes .st-answered { color: var(--gold); border-color: var(--gold); } .myNotes .st-dropped { color: #9a8a6a; }
+:is(.myNotes, .fromClaude) .when { color: var(--muted); margin-left: auto; }
+:is(.myNotes, .fromClaude) .sum { margin-top: 3px; color: var(--text); }
+:is(.myNotes, .fromClaude) .words { margin-top: 2px; color: var(--muted); font-size: 13px; white-space: pre-wrap; }
+:is(.myNotes, .fromClaude) .answer { margin-top: 4px; padding: 4px 8px; border-left: 3px solid #b08a40; background: rgba(0, 0, 0, 0.3); }
+/* "From the agent" (feedback/replies.ts): the agent's answers, each under the note it answers, as My notes draws them;
+   wide enough to read, the panel's buttons small (2026-10-27: "too small for its text, a huge Confirm button"). */
+.replies.fromClaude { width: min(520px, calc(var(--page-w) - 24px)); max-width: none; max-height: calc(var(--page-h) * 0.6); overflow-x: hidden; font-size: 15px; z-index: 22; }
+.fromClaude .head { position: sticky; top: 0; z-index: 2; margin: 0 0 4px; padding: 4px 0; background: var(--panel-bg); border-bottom: 1px solid #8a6b36; }
+html.framed .fromClaude .head { background: var(--menu-bg) 0 0 / auto repeat, #3a2713; }
+.fromClaude .head b { font-size: 1.15em; }
+.fromClaude .head .acts { display: flex; gap: 6px; align-items: center; }
+.fromClaude .head button.ico.art { height: 32px !important; min-height: 0 !important; width: calc(32px * var(--ico-w, 64) / var(--ico-h, 30)) !important; }
+.fromClaude .head button.ico.glyph { width: 32px !important; height: 32px !important; }
+.fromClaude .note { grid-template-columns: 80px 1fr; gap: 8px; padding: 6px 0; }
+.fromClaude .note.plain { grid-template-columns: 1fr; }
+.fromClaude .note img, .fromClaude .noShot { width: 80px; height: 50px; }
+.fromClaude .sum { margin-top: 0; font-weight: bold; }
+.fromClaude .answer { margin-top: 3px; }
+.fromClaude .cWhen { font-size: 12px; color: var(--muted); margin-left: auto; }
+@media (pointer: coarse) { .fromClaude .head button.ico.art { height: 40px !important; width: calc(40px * var(--ico-w, 64) / var(--ico-h, 30)) !important; } .fromClaude .head button.ico.glyph { width: 40px !important; height: 40px !important; } }
+/* A phone sideways: from the foot up to just under ☰ and Feedback, clear of the navigation bar on the right. */
+:where(body.coarse.pageLand) .replies.fromClaude { width: min(520px, calc(var(--page-w) - 24px - 72px)); bottom: calc(8px + var(--safe-bottom, 0px)); max-height: calc(var(--page-h) - 64px - var(--safe-bottom, 0px)); }
+.myNotesBig { position: fixed; inset: 0; z-index: 70; background: rgba(0, 0, 0, 0.85); display: flex; align-items: center; justify-content: center; }
+.myNotesBig img { max-width: 96vw; max-height: 96dvh; }
+.myNotes .head button { padding: 8px 16px; font-size: 15px; }
+/* The splash's icon only when the loading picture is slow to come (a first visit): not a flash of it before the picture. */
+#splash .splashIcon { opacity: 0; animation: splashIcon 0s 0.6s forwards; }
+@keyframes splashIcon { to { opacity: 1; } }
+/* What is still loading (ui/loadingNote.ts): bottom left, clear of the page's buttons and a phone's navigation bar; over the loading screen too. */
+#loadingNote { position: fixed; left: calc(8px + var(--safe-left, 0px)); bottom: calc(8px + var(--safe-bottom, 0px)); z-index: 55; display: none; flex-direction: column; gap: 4px; max-width: min(60vw, 360px); padding: 5px 10px; background: rgba(20, 15, 8, 0.88); color: #e8c860; border: 1px solid #8a6a2a; border-radius: 4px; font: 14px Georgia, serif; pointer-events: none; }
+#loadingNote.on { display: flex; }
+#loadingNote span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#loadingNote .track { height: 4px; background: #3a2c18; border-radius: 2px; overflow: hidden; }
+#loadingNote .track div { height: 100%; width: 0; background: #e8c860; transition: width 0.2s; }
+/* A game screen with Feedback and the menu in its own panels (upright battle: battle/touchLayout.ts):
+   the page's corner buttons give way (their clicks still work: the screen's buttons press them). */
+/* ☰ and Feedback stay a pair (2026-10-24: "where is my hamburger menu?"): both at the foot, ☰ left, Feedback right. */
+body.ownButtons #menuToggle { top: auto; bottom: calc(10px + var(--safe-bottom, 0px)); left: calc(8px + var(--safe-left, 0px)); right: auto; }
+/* Feedback is the same button everywhere (the owner): there at the screen's foot, on the right. */
+body.ownButtons #feedback:not(.open) { top: auto; left: auto; bottom: calc(10px + var(--safe-bottom, 0px)); right: calc(8px + var(--safe-right, 0px)); }
+/* Touch screens: the menu and Feedback alike, a finger's height, the game's gold on dark brown. */
+@media (pointer: coarse), (max-height: 560px) {
+  #menuToggle, #feedback:not(.open) #fbToggle { min-height: 40px; min-width: 44px; padding: 6px 12px; font: 18px/1 Georgia, serif; color: var(--gold); background: rgba(36, 28, 18, 0.85); border: 1px solid #7a5d30; border-radius: 4px; opacity: 1; }
+}
+
+
+/* Install card (install.ts): a small, dismissible note at the bottom, clear of a phone's navigation bar and the home bar. */
+#installCard { position: fixed; z-index: 60; left: max(12px, var(--safe-left)); bottom: max(12px, var(--safe-bottom)); width: min(380px, calc(100vw - 24px - var(--safe-left) - var(--safe-right))); box-sizing: border-box; padding: 10px 12px; background: #2a1d10; color: #f0e0b0; border: 2px solid #b08a40; font: 15px/1.35 Georgia, serif; }
+#installCard p { margin: 0 0 8px; }
+#installCard .installCode { font-weight: bold; }
+#installCard div { display: flex; flex-wrap: wrap; gap: 8px; }
+#installCard button { font: inherit; min-height: 44px; padding: 6px 12px; color: inherit; background: #3a2c18; border: 1px solid #7a5d30; border-radius: 3px; }
+#installCard button.primary { border-color: var(--gold); background: #4a3820; }
+:where(body.coarse.pageLand) #installCard { right: calc(72px + var(--safe-right)); left: auto; width: min(330px, 40vw); font-size: 13px; padding: 6px 8px; } :where(body.coarse.pageLand) #installCard button { min-height: 40px; padding: 4px 8px; }
+
+/* The players' chat room (chat.ts): a panel over the game, the field at the thumb's end; the dot on ☰ when words wait. */
+#menuToggle.chatUnread::after { content: ""; position: absolute; top: 4px; right: 4px; width: 9px; height: 9px; border-radius: 50%; background: #4ab0e0; box-shadow: 0 0 4px #4ab0e0; }
+/* Phones sideways: the panel clear of the right-hand navigation bar, short enough for the keyboard. */
+/* Chat, in the original's dialog texture (chrome/look.ts dialogBacking) like the page menu; avatars are the game's portraits. */
+/* Profiles: the people list and a profile card (over the room like the avatar picker), the invitation bar. */
+/* Chat threads: answers hang under their message, folded behind "N replies"; the bell sets the pushes. */
+/* Chat pictures: the + button's picker (the game now, recent notes' pictures), a chip for the one chosen, pictures in the room. */
+/* Chat timeline events (notes sent on, updates deployed) and the notes leaderboard. */
+/* The Cost ledger's bar. */
+#previewChip { position: fixed; z-index: 60; left: 50%; transform: translateX(-50%); top: calc(2px + var(--safe-top)); display: flex; align-items: center; gap: 8px; padding: 4px 6px 4px 10px; background: rgba(24, 18, 10, 0.92); border: 1px solid #7a5d30; border-radius: 4px; font-size: 13px; color: var(--gold); max-width: calc(var(--page-w, 100vw) - 24px); }
+#previewChip b { color: #fff; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#previewChip a { min-height: 40px; display: inline-flex; align-items: center; gap: 4px; background: #3a2c18; color: var(--text); border: 1px solid #7a5d30; border-radius: 3px; font: inherit; padding: 0 10px; text-decoration: none; }
+.myNotes .asks { margin-top: 14px; border-top: 2px solid #7a5d30; padding-top: 8px; }
+.myNotes .askGroup { margin-top: 10px; color: var(--gold); font-weight: bold; }
+.myNotes .ask { display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; border-top: 1px solid #3a2c18; }
+.myNotes .ask .st { flex: none; min-width: 78px; text-align: center; font-size: 13px; }
+.myNotes .st-askx { color: #b9d88a; } .myNotes .st-askp { color: var(--gold); } .myNotes .st-asko { color: #e0a080; }
+.myNotes .ask > span:nth-child(2) { flex: 1; min-width: 0; }
+.myNotes .ask button.ico { flex: none; margin-left: auto; }
+.myNotes .st-working { color: #e8c46a; background: #4a3a18; } .myNotes .st-partial { color: #e8c46a; } .myNotes .st-parked { color: #9a9a9a; } .myNotes .st-deploy { color: #9fd0ff; } .myNotes .st-live { color: #7fc76a; background: #24401f; }
+.myNotes .noteEdit textarea { width: 100%; box-sizing: border-box; font: inherit; background: #0d0a06; color: var(--text); border: 1px solid #7a5d30; border-radius: 4px; padding: 6px; }
+.myNotes .noteEdit div { display: flex; gap: 8px; margin-top: 4px; }
+.myNotes .noteEdit button, .myNotes .editNote { min-height: 40px; min-width: 56px; }
+.myNotes .noteEdit .mic.on { background: #7a2020; }
+/* Layouts…: a picture of the current screen in each layout (chrome/layouts.ts). */
+.layoutsPanel, .notifyPanel { width: min(560px, calc(var(--page-w) - 24px)); background: var(--panel-bg); border: 2px solid #b08a40; outline: 1px solid #000; border-radius: 2px; }
+.layoutGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 6px; }
+.townPanel .layoutCard { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px; white-space: normal; min-height: 44px; }
+.layoutCard .pic { display: flex; align-items: center; justify-content: center; width: 100%; height: 130px; background: #000; border: 1px solid #5a4526; }
+.layoutCard .pic canvas { max-width: 100%; max-height: 100%; width: auto !important; height: auto !important; object-fit: contain; }
+.layoutCard small { color: #9a8a6a; min-height: 1.2em; font-size: 0.85em; }
+.layoutCard.on { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }
+.layoutCard.on b { color: var(--gold); }
+/* A phone held sideways: one row of pictures, clear of Android's navigation bar (the panel's right: 84px). */
+:where(body.pageShort) .layoutsPanel { width: min(748px, calc(var(--page-w) - 96px)); }
+:where(body.pageShort) .layoutGrid { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+:where(body.pageShort) .layoutCard .pic { height: 78px; }
+:where(body.pageShort) .townPanel .layoutCard { padding: 4px; }
+.myNotes .noteFilters { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
+.myNotes .noteFilters input, .myNotes .noteFilters select { font: inherit; font-size: 14px; min-height: 40px; background: #0d0a06; color: var(--text); border: 1px solid #7a5d30; border-radius: 4px; padding: 4px 6px; }
+.myNotes .noteFilters input { flex: 1 1 100%; }
+.myNotes .note[hidden] { display: none; }
+
+.notifyPanel .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid #3a2c18; }
+.notifyPanel .row.hint { display: block; border-top: 0; }
+.notifyPanel .row.buttons { justify-content: center; }
+.notifyPanel button { min-height: 44px; }
+.notifyPanel { max-height: calc(var(--page-h) - 24px); overflow-y: auto; }
+/* How to… (howto.ts): animated demos on a small stand-in screen, laid out as the desktop, an upright or
+   sideways phone, or one-handed play; the script sets classes on .mvStage, CSS animates them. */
+.howtoShade { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 59; }
+.advMessage.howto { z-index: 60; top: 50%; text-align: left; width: min(760px, calc(var(--page-w, 100vw) - 24px)); max-height: calc(var(--page-h, 100vh) - 24px); overflow-y: auto; font-size: 15px; }
+.advMessage.howto h3 { color: var(--gold); margin: 0 0 8px; font-weight: 400; }
+.advMessage.howto .close { float: right; margin: -8px -10px 0 8px; padding: 2px 12px; font-size: 22px; }
+.advMessage.howto.list > button[data-m] { display: block; width: 100%; margin: 8px 0; padding: 12px; min-height: 48px; font-size: 16px; text-align: left; }
+.mvCap { min-height: 3.2em; margin: 8px 0 4px; font-size: 16px; }
+.mvDots { display: flex; gap: 6px; margin-bottom: 6px; }
+.mvDots i { flex: 1; height: 4px; border-radius: 2px; background: #5a4a30; }
+.mvDots i.on { background: var(--gold); }
+.mvBar { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
+.mvBar .mvDots { flex: 1; margin: 0; }
+.mvNav { display: flex; gap: 8px; justify-content: flex-end; }
+.mvNav button { margin: 0; padding: 9px 16px; min-height: 48px; font-size: 15px; }
+.mvStage { position: relative; aspect-ratio: var(--ar, 16 / 9); overflow: hidden; border: 2px solid #7a5d30; border-radius: 6px; background: #0d0a06; margin: 0 auto; width: min(100%, calc(48dvh * var(--ar, 1.78))); }
+:where(body.pageUp) .mvStage { width: min(100%, calc(56dvh * var(--ar, 1.78))); }
+/* The real client in a frame, scaled and moved by the camera (howto.ts look()); the finger taps what the caption names. */
+.mvWorld { position: absolute; left: 0; top: 0; transform-origin: 0 0; transition: transform 0.55s ease; }
+.mvWorld iframe { border: 0; display: block; background: #000; pointer-events: none; }
+.mvFinger { position: absolute; font-size: 28px; line-height: 1; transform: translate(-30%, 0) scale(var(--k, 1)); transform-origin: 30% 0; opacity: 0; transition: opacity 0.3s, left 0.55s, top 0.55s; pointer-events: none; text-shadow: 0 0 4px #000; }
+.mvStage.fing .mvFinger { opacity: 1; animation: mvTap 1.1s ease-in-out infinite; }
+@keyframes mvTap { 50% { transform: translate(-30%, 6px) scale(calc(var(--k, 1) * 0.85)); } }
+/* A line under the caption for a beat (the voice demo: the voice is not kept). */
+.mvNote { margin: 2px 0 0; color: var(--gold); font-size: 15px; line-height: 1.3; }
+/* A phone held sideways has little height: the demo shrinks to leave room for its captions and buttons. */
+@media (max-height: 480px) {
+  .advMessage.howto h3 { display: none; }
+  .advMessage.howto { padding-top: 6px; }
+  .mvStage { width: min(100%, calc(46dvh * var(--ar, 1.78))); }
+  .mvCap { min-height: 2.4em; margin: 4px 0; }
+  .mvDots { margin-bottom: 2px; }
+
+  .mvNav button { min-height: 44px; padding: 4px 14px; }
+}
+
+/* Menu and Feedback are twin round buttons everywhere (2026-10-24): the same size, the game's gold on
+   dark brown. Feedback's icon is the mode a tap starts (pencil: typing, microphone: voice; a long press switches). */
+:root { --roundBtn: 40px; }
+@media (pointer: fine) and (min-height: 561px) { :root { --roundBtn: 30px; } }
+#menuToggle, #feedback #fbToggle, #feedback:not(.open) #fbToggle, #feedback.open #fbToggle {
+  box-sizing: border-box;
+  width: var(--roundBtn);
+  height: var(--roundBtn);
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid #7a5d30;
+  background: rgba(36, 28, 18, 0.85);
+  color: var(--gold);
+  font: calc(var(--roundBtn) * 0.45)/1 Georgia, serif;
+  text-align: center;
+  opacity: 1;
+}
+#feedback #fbToggle { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+#feedback #fbToggle svg { width: 58%; height: 58%; }
+body.menuOpen #menuToggle { border-color: var(--gold); }
+@media (hover: hover) { #menuToggle:hover, #feedback #fbToggle:hover { border-color: var(--gold); } }
+/* One-handed: the round buttons sit side by side from the thumb's edge (screen.ts oneHand). */
+@media (pointer: coarse), (max-height: 560px) {
+  body.oneHandRight #menuToggle { right: calc(52px + var(--safe-right)); }
+  body.oneHandRight #fullscreen { right: calc(98px + var(--safe-right)); }
+  #fullscreen { width: 40px; height: 40px; padding: 0; border-radius: 50%; }
+}
+body:where(.coarse.pageLow).oneHandRight #menuToggle { right: calc(124px + var(--safe-right)); }
+body:where(.coarse.pageLow).oneHandRight #fullscreen { right: calc(170px + var(--safe-right)); }
+.myNotes .forJan .ask button { flex: none; min-height: 40px; }
+.myNotes .ask a { color: var(--gold); }
+.myNotes .st-bump { color: #ffd54a; background: #5a4410; }
+.myNotes .bumpNote, .myNotes .bumpAsk { min-height: 40px; min-width: 56px; margin-left: 6px; flex: none; }
+
+/* Icon buttons (ui/htmlIcons.ts): the original's button art instead of a word. The art's size is --ico-w x --ico-h
+   in game pixels; scaled 1.5x (2x on touch) so a finger can find it. Without the game files, a glyph on the page's brown. */
+button.ico { box-sizing: border-box; font-size: 0 !important; padding: 0 !important; min-width: 0 !important; border: 0 !important; flex: none; position: relative; width: calc(var(--ico-w, 64) * 1px * 1.5); height: calc(var(--ico-h, 30) * 1px * 1.5); min-height: 0 !important; }
+@media (pointer: coarse) { button.ico { width: calc(var(--ico-w, 64) * 1px * 1.5); height: calc(var(--ico-h, 30) * 1px * 1.5); min-height: 44px !important; } }
+button.ico::before { content: attr(data-glyph); font: 18px/1 Georgia, serif; color: var(--gold); display: flex; align-items: center; justify-content: center; height: 100%; }
+button.ico.art { background: var(--ico-up) center / 100% 100% no-repeat !important; image-rendering: auto; }
+button.ico.art::before { content: none; }
+button.ico.art:active { background-image: var(--ico-down) !important; }
+/* The DEF's own highlighted and greyed frames (docs/visual-language.md: buttons), not a CSS filter. */
+@media (hover: hover) { button.ico.art:hover:not(:active):not(:disabled) { background-image: var(--ico-hover, var(--ico-up)) !important; } }
+button.ico:disabled { opacity: 0.5; }
+button.ico.art.greyArt:disabled { opacity: 1; background-image: var(--ico-off) !important; }
+button.ico.glyph { width: 40px !important; height: 40px !important; min-height: 0 !important; border: 1px solid #7a5d30 !important; border-radius: 4px; background: rgba(36, 28, 18, 0.85); }
+@media (pointer: fine) and (min-height: 561px) { button.ico.glyph { width: 32px !important; height: 32px !important; } }
+button.ico.glyph.on { border-color: var(--gold) !important; }
+@media (hover: hover) { button.ico.glyph:hover { border-color: var(--gold) !important; } }
+@media (pointer: fine) { button.ico { width: calc(var(--ico-w, 64) * 1px); height: calc(var(--ico-h, 30) * 1px); } }
+
+/* Feedback, point-and-send mode (feedback/touch.ts, pointOnly): the bar sits at the foot, in the thumb's reach; ✓ sends the picked element. */
+#fbPick [data-send] { display: none; }
+#fbPick.pointOnly [data-send] { display: inline-flex; }
+#fbPick.pointOnly.typing [data-send], #fbPick.pointOnly [data-mode] { display: none; }
+/* The frozen picture keeps the game's own size (2026-10-25): the hint and the bar float over it. */
+#fbPick.pointOnly:not(.typing) .fbBar { position: fixed; top: auto; bottom: calc(6px + var(--safe-bottom, 0px)); left: 50%; transform: translateX(-50%); padding: 4px 6px; }
+#fbPick [data-send][disabled] { opacity: 0.4; }
+#fbPick .fbHint { display: none; }
+#fbPick.pointOnly:not(.typing) .fbHint { display: block; position: fixed; top: calc(4px + var(--safe-top)); left: 50%; transform: translateX(-50%); max-width: calc(100vw - 16px); pointer-events: none; z-index: 1; padding: 3px 10px; color: var(--text); font-size: 15px; text-align: center; background: rgba(36, 28, 18, 0.92); border: 1px solid #7a5d30; border-radius: 4px; }
+
+/* The ☰ menu as one panel of icon tiles (chrome/iconMenu.ts, EXTRAS iconMenu): the list's own rows hidden,
+   The owner's "Pages, agent key" tile unfolds what's left of More… under the tiles. */
+#toolbar.icons { width: auto; max-width: calc(var(--page-w) - 12px); grid-template-columns: 1fr; max-height: calc(100dvh - 76px); overflow-y: auto; overscroll-behavior: contain; }
+#toolbar.icons > :not(#iconMenu):not(#menuMoreList) { display: none !important; }
+#toolbar.icons #menuMoreList { grid-column: auto; max-width: 440px; }
+#toolbar.icons #menuMoreList :is(.fbSetting, #offline, #fbDevice, #fbInvite, #fbReview, #fbAdmin, #fbPreviews, #fbCatalog, #fbNotify) { display: none !important; }
+/* The tiles have the original's button shape (the 64 x 36 box that holds the battle bar's 48 x 36, the hero screen's 52 x 36
+   and the 64 x 32 everyday kind): every tile is the same brown bevelled box; an art tile shows the DEF's own face inside it
+   at the largest whole fit, a glyph tile a gold symbol, for the actions the original has no button for. The columns shrink
+   with the screen (minmax(0, ...)) and the boxes keep their shape (aspect-ratio), so the panel fits any phone's width
+   (the owner's 412 px phone cut the fourth column off when the tiles were a fixed 96 px). */
+#iconMenu { --cols: 8; --tw: 64px; --th: 36px; display: grid; gap: 6px; min-width: 0; }
+#iconMenu .iconBlocks, #iconMenu .iconOwner { display: grid; gap: 6px; align-content: start; min-width: 0; }
+#iconMenu .iconGrid { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, var(--tw))); gap: 8px 6px; align-items: start; }
+#iconMenu .cell { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; }
+#iconMenu .cap { width: 100%; text-align: center; font-size: 11px; line-height: 1.15; color: var(--text); overflow-wrap: anywhere; }
+#iconMenu .ownerRule { display: flex; align-items: center; gap: 8px; color: var(--gold); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+#iconMenu .ownerRule::before, #iconMenu .ownerRule::after { content: ""; flex: 1; height: 1px; background: rgba(176, 138, 64, 0.5); }
+#toolbar #iconMenu button.tile { width: 100% !important; max-width: var(--tw); height: auto !important; aspect-ratio: 64 / 36; min-height: 0 !important; padding: 0; border: 1px solid #000 !important; border-radius: 0; background: linear-gradient(#4a3520, #2b1e11) !important; box-shadow: inset 1px 1px 0 #a3824e, inset -1px -1px 0 #120c06; }
+#toolbar #iconMenu button.tile.art { background: var(--ico-up) center / contain no-repeat, linear-gradient(#4a3520, #2b1e11) !important; image-rendering: pixelated; }
+#toolbar #iconMenu button.tile.art:active { background: var(--ico-down) center / contain no-repeat, linear-gradient(#2b1e11, #4a3520) !important; }
+@media (hover: hover) { #toolbar #iconMenu button.tile.art:hover:not(:active) { background-image: var(--ico-hover, var(--ico-up)), linear-gradient(#4a3520, #2b1e11) !important; } }
+#toolbar #iconMenu button.tile:active { box-shadow: inset -1px -1px 0 #a3824e, inset 1px 1px 0 #120c06; }
+#iconMenu button.tile::before { font-size: calc(var(--th) * 0.6); }
+#iconMenu button.tile[data-key="sound"][data-off]::before { text-decoration: line-through; opacity: 0.7; }
+#iconMenu button.tile[data-ico="lang"]::before { font: 700 calc(var(--th) * 0.45) / 1 Georgia, serif; }
+/* The language tiles, a row of their own under the player's tiles; the one in use lit, as a pressed tab. */
+#iconMenu .iconPlay { display: grid; gap: 8px; min-width: 0; }
+#toolbar #iconMenu button.tile.on { border-color: var(--gold) !important; box-shadow: inset -1px -1px 0 #a3824e, inset 1px 1px 0 #120c06, 0 0 6px rgba(255, 220, 120, 0.45); }
+#iconMenu button.tile[data-ico="lang"]:not(.on)::before { opacity: 0.75; }
+#iconMenu button.tile.badged::after { content: attr(data-badge); position: absolute; top: -4px; right: -4px; font: 700 11px/15px sans-serif; min-width: 15px; padding: 0 3px; border-radius: 8px; background: #c33; color: #fff; text-align: center; }
+#iconMenu button.tile:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+@media (hover: hover) { #iconMenu button.tile:hover { outline: 2px solid var(--gold); outline-offset: 1px; } }
+#iconMenu .iconStatus { display: flex; align-items: center; gap: 8px; background: #120c07; border: 1px solid #5a4424; padding: 2px 3px 2px 8px; min-height: 30px; color: var(--text); font-size: 14px; }
+#iconMenu .iconStatus span { flex: 1; min-width: 0; line-height: 1.25; }
+#toolbar #iconMenu .iconStatus button.ico { width: 39px !important; height: 26px !important; min-height: 0 !important; }
+@media (pointer: coarse), (max-height: 560px) {
+  #iconMenu { --cols: 4; --tw: 96px; --th: 54px; }
+  #iconMenu .iconStatus { min-height: 40px; font-size: 16px; }
+  #iconMenu .cap { font-size: 13px; }
+  #toolbar #iconMenu .iconStatus button.ico { width: 54px !important; height: 36px !important; }
+}
+/* A phone held sideways: the owner's block beside the player's, so nothing scrolls. */
+:where(body.coarse.pageLand) #iconMenu, :where(body.pageLow) #iconMenu { --tw: 80px; --th: 45px; }
+/* The owner's block beside the player's: the panel stays out of the right-hand 72 px (Android's bar), the two blocks share the width. */
+:where(body.coarse.pageLand) #toolbar.icons, :where(body.pageLow) #toolbar.icons { max-width: calc(var(--page-w) - 72px - 12px); }
+:where(body.coarse.pageLand) #iconMenu .iconOwner, :where(body.pageLow) #iconMenu .iconOwner { --tw: 64px; --th: 36px; }
+:where(body.coarse.pageLand) #iconMenu .iconBlocks.withOwner, :where(body.pageLow) #iconMenu .iconBlocks.withOwner { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 14px; }
+/* A player's panel has the whole width: more columns, so the language row fits without scrolling. */
+:where(body.coarse.pageLand) #iconMenu .iconBlocks:not(.withOwner), :where(body.pageLow) #iconMenu .iconBlocks:not(.withOwner) { --cols: 7; }
+
+/* Settings and its additions in the look of the original's System Options (chrome/settingsWindow.ts): a framed
+   window, names in words, ✓ / ⊘ boxes (SYSOPCHK when the game files are in), gold plaques. */
+.optionsPanel.sysLook { background: linear-gradient(rgba(16, 11, 5, 0.45), rgba(16, 11, 5, 0.45)), var(--menu-bg, none) repeat, #2a1e10; border: 3px solid #c9a356; box-shadow: 0 0 0 3px #5e1d16, 0 0 0 5px #c9a356, 0 10px 30px rgba(0, 0, 0, 0.8); }
+.sysLook .head b { flex: 1; text-align: center; font-size: 1.35em; }
+.sysCols { display: grid; gap: 10px; margin-top: 8px; }
+.sysBox { border: 1px solid #8a6b36; background: rgba(0, 0, 0, 0.25); padding: 8px 10px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.sysBox > b { color: var(--gold); text-align: center; font-weight: normal; }
+.sysBox small { color: #9a8a6a; font-size: 0.85em; }
+.optionsPanel .sysBox select { width: 100%; max-width: 100%; flex-shrink: 1; }
+.townPanel .sysChk { display: flex; align-items: center; gap: 10px; text-align: left; background: none; border: 0; padding: 2px 0; color: var(--text); font: inherit; min-height: 32px; cursor: pointer; width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.sysChk::before { content: "\2298"; flex: none; width: 24px; height: 24px; display: grid; place-items: center; border: 1px solid #000; background: linear-gradient(#5a4126, #2b1e11); color: var(--gold); font-weight: 700; }
+.sysChk[aria-pressed="true"]::before { content: "\2713"; }
+.chkArt .sysChk::before { content: ""; width: 30px; height: 30px; border: 0; background: var(--chk-off) center / contain no-repeat; }
+.chkArt .sysChk[aria-pressed="true"]::before { background-image: var(--chk-on); }
+.sysChk:disabled { opacity: 0.5; cursor: default; }
+.plaques { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; margin-top: 10px; }
+.townPanel .plaque { font-weight: 700; text-transform: uppercase; font-size: 0.78em; line-height: 1.15; color: #2a1a08; background: linear-gradient(#f0d78c, #b68d3e); border: 2px solid #3a2810; border-radius: 1px; padding: 8px 6px; min-height: 40px; white-space: normal; }
+@media (hover: hover) { .townPanel .plaque:hover { filter: brightness(1.08); } }
+.extrasList { margin-top: 8px; column-gap: 8px; }
+.extrasList .sysBox { display: block; break-inside: avoid; margin-bottom: 8px; padding: 4px 10px 6px; }
+.extrasList .sysBox > b { display: block; }
+.extrasList .sysBox > b { margin-bottom: 2px; }
+.extrasPanel .sysChk { min-height: 30px; }
+.sysStatus { position: sticky; bottom: -10px; margin: 8px -10px -10px; padding: 6px 12px; min-height: 30px; background: #120c07; border-top: 1px solid #8a6b36; color: var(--text); font-size: 0.9em; line-height: 1.3; }
+@media (pointer: coarse), (max-height: 560px) { .extrasPanel .sysChk { min-height: 40px; } .sysStatus { font-size: 0.95em; } }
+@media (min-width: 700px) {
+  .optionsPanel.sysLook { width: min(640px, calc(var(--page-w) - 24px)); }
+  .sysCols { grid-template-columns: 1fr 1fr; }
+  .sysCols .sysBox:last-child, .sysCols .sysBox[hidden] + .sysBox { grid-column: 1 / -1; }
+  .extrasList { column-count: 2; }
+  .optionsPanel.sysLook.extrasPanel { width: min(760px, calc(var(--page-w) - 24px)); }
+}
+/* The multiplayer lobby (map/lobby.ts) on a desktop: in the middle of the page, as the original's windows open, not hugging the right edge over a black page. */
+@media (pointer: fine) and (min-width: 700px) and (min-height: 561px) { .townPanel.lobbyPanel { left: 50%; right: auto; top: 50%; transform: translate(-50%, -50%); max-height: calc(var(--page-h) - 80px); } }
+/* Start (or who it waits for) first under the room's line, marked out: the one thing the host came to press. */
+.lobbyPanel .row.mpStart { flex-wrap: wrap; gap: 4px; border: 1px solid #f0d78c; background: rgba(0, 0, 0, 0.35); padding: 4px 8px; margin: 4px 0; }
+.lobbyPanel .row.mpStart > button { margin-left: auto; max-width: 100%; }
+/* A colour's row on that colour's marble (ADOP?PNL, lobby.ts lobbyArt), as the original's player rows. */
+.lobbyPanel .mpSlot { background: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), var(--slot-bg, none) center / 100% 100%; border: 1px solid #8a6b36; outline: 1px solid #000; margin: 4px 0; padding: 2px 8px; text-shadow: 1px 1px 0 #000; }
+.lobbyPanel .mpSlot.me { border-color: #f0d78c; background: linear-gradient(rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.25)), var(--slot-bg, none) center / 100% 100%; }
+.lobbyPanel .mpSlot .row.opts { color: #e8dcc0; }
+.lobbyPanel.chkArt input[type="checkbox"] { appearance: none; -webkit-appearance: none; background: var(--chk-off) center / contain no-repeat; border: 0; cursor: pointer; }
+.lobbyPanel.chkArt input[type="checkbox"]:checked { background-image: var(--chk-on); }
+.lobbyPanel.chkArt input[type="checkbox"]:disabled { opacity: 0.6; cursor: default; }
+/* Its checks: never squeezed by a long label beside them, a thumb's size on a phone. */
+.lobbyPanel input[type="checkbox"] { flex: none; width: 20px; height: 20px; margin: 0 2px 0 10px; accent-color: #c9a24a; }
+@media (pointer: coarse) { .lobbyPanel input[type="checkbox"] { width: 28px; height: 28px; } .lobbyPanel .row { min-height: 44px; } }
+.howto.list .build { display: block; margin-top: 8px; color: #9a8a6a; font-size: 0.85em; }
+
+/* A new player's first steps (map/firstSteps.ts): a small checklist in the original's dialog texture, over the map's top left. */
+.firstSteps {
+  position: fixed;
+  left: 18px;
+  top: 52px;
+  z-index: 12;
+  width: min(290px, calc(var(--page-w) - 32px));
+  padding: 4px 8px 6px;
+  background: linear-gradient(rgba(16, 11, 5, 0.45), rgba(16, 11, 5, 0.45)), var(--menu-bg, none) repeat, rgba(24, 18, 10, 0.95);
+  border: 2px solid #b08a40;
+  outline: 1px solid #000;
+  border-radius: 2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+  color: var(--text);
+  font: 14px/1.3 Georgia, serif;
+}
+.firstSteps h4 { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 0; color: var(--gold); font-weight: normal; font-size: 1.05em; }
+.firstSteps h4 [data-fold] { flex: 1; cursor: pointer; padding: 2px 0; }
+.firstSteps h4 b { font-weight: normal; color: var(--text); margin-left: 4px; }
+.firstSteps h4 em { font-style: normal; opacity: 0.7; }
+.firstSteps .x { flex: none; width: 28px; height: 28px; padding: 0; background: rgba(0, 0, 0, 0.35); color: var(--gold); border: 1px solid #7a5d30; border-radius: 2px; font: 18px/1 Georgia, serif; cursor: pointer; }
+.firstSteps ol { list-style: none; margin: 4px 0 0; padding: 0; }
+.firstSteps li, .firstSteps .nextGoal { display: flex; gap: 6px; align-items: baseline; padding: 2px 0; }
+.firstSteps li { opacity: 0.8; }
+.firstSteps i { flex: none; width: 0.85em; height: 0.85em; border: 1px solid #b08a40; background: rgba(0, 0, 0, 0.4); position: relative; top: 0.1em; }
+.firstSteps li.done { opacity: 0.55; text-decoration: line-through; text-decoration-color: rgba(232, 196, 106, 0.6); }
+.firstSteps li.done i::after { content: "✓"; position: absolute; left: 0; top: -0.35em; color: var(--gold); font-size: 1.2em; }
+.firstSteps li.next, .firstSteps .nextGoal { opacity: 1; color: #fff; }
+.firstSteps li.next i, .firstSteps .nextGoal i { border-color: var(--gold); box-shadow: 0 0 5px var(--gold); }
+.firstSteps p { margin: 4px 0 2px; }
+.firstSteps .nextGoal { margin: 2px 0 0; cursor: pointer; }
+/* Touch: readable at arm's length, a finger-sized close; sideways phones beside the hero list, clear of the map's buttons. */
+.firstSteps[hidden], body.inBattle .firstSteps, body.menuOpen .firstSteps, body.noteOpen .firstSteps { display: none; }
+@media (pointer: coarse) { .firstSteps { font-size: 15px; width: min(260px, calc(var(--page-w) - 32px)); } .firstSteps .x { width: 36px; height: 36px; } }
+:where(body.pageShort) .firstSteps { left: 110px; top: 50px; width: 240px; }
+/* Upright: beside the hero and town list, under the resource bar. */
+body.portrait .firstSteps { left: 88px; top: 108px; width: min(280px, calc(var(--page-w) - 104px)); }
+.advMessage.notifyAsk { z-index: 40; text-align: left; }
+.advMessage.notifyAsk h3 { margin: 0 0 8px; color: var(--gold); font-weight: normal; }
+.advMessage.notifyAsk .sub { color: var(--muted); font-size: 0.9em; }
+.advMessage.notifyAsk .tourNav { display: flex; justify-content: flex-end; gap: 10px; }
+
+/* Our two buttons and the menu stay above every window (My notes, chat, New Game...): a note can always be
+   sent and the menu always closed, whatever is open (2026-10-24: "My notes hides behind the menu"). */
+#feedback { z-index: 46; }
+#menuToggle { z-index: 47; }
+#toolbar { z-index: 48; }
+/* The chat room is above all of them (z 60, the whole page on phones): Feedback then sits in the room's heading
+   (chat.ts puts a slot there), and a note started over the room opens above it, so a note can be about the room. */
+body.chatRoomOpen #feedback:not(.open) { left: var(--fbSlotX) !important; top: var(--fbSlotY) !important; right: auto !important; bottom: auto !important; transform: none !important; z-index: 61; }
+body.chatRoomOpen #feedback.open, body.chatRoomOpen #fbPick, body.chatRoomOpen .fbFlash, body.chatRoomOpen #voiceNote { z-index: 62; }
+
+/* My notes as a table (feedback/myNotes.ts): wide screens get columns under a sortable header; narrow ones keep the stacked card. */
+:is(.myNotes, .fromClaude) .note .body { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+:is(.myNotes, .fromClaude) .cTitle { flex: 1 1 100%; min-width: 0; overflow-wrap: anywhere; }
+.myNotes .cTags { flex: 1 1 100%; }
+.myNotes .cTags, .myNotes .cSt { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; font-size: 13px; }
+.myNotes .cWhen, .myNotes .cSrc { font-size: 12px; color: var(--muted); margin: 0; }
+.myNotes .cAct { flex: 1 1 100%; display: flex; gap: 6px; }
+.myNotes .cAct:empty { display: none; }
+.myNotes .noteCols { display: none; }
+@media (min-width: 1000px) {
+  :where(body.pageLand) .replies.myNotes { width: min(1320px, calc(100vw - 32px)); max-height: 86dvh; }
+  :where(body.pageLand) .myNotes .noteCols, :where(body.pageLand) .myNotes .note { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 0 12px; align-items: start; }
+  :where(body.pageLand) .myNotes .noteCols { position: sticky; top: 34px; z-index: 1; background: rgb(24, 18, 10); border-bottom: 1px solid #8a6b36; padding: 4px 0; }
+  :where(body.pageLand) .myNotes .noteCols { grid-template-columns: 112px minmax(220px, 4fr) minmax(180px, 3fr) 150px 120px 90px 120px; }
+  :where(body.pageLand) .myNotes .note .body { display: grid; grid-template-columns: minmax(220px, 4fr) minmax(180px, 3fr) 150px 120px 90px 120px; gap: 0 12px; align-items: start; }
+  :where(body.pageLand) .myNotes .cAct { flex-direction: column; }
+  :where(body.pageLand) .myNotes .cAct button { margin: 0; }
+  :where(body.pageLand) .myNotes .note img, :where(body.pageLand) .myNotes .noShot { width: 112px; height: 70px; }
+  :where(body.pageLand) .myNotes .noteCols button { background: none; border: 0; color: var(--gold); text-align: left; padding: 4px 0; cursor: pointer; font: inherit; min-height: 0; }
+  :where(body.pageLand) .myNotes .noteCols button i::after { content: ""; }
+  :where(body.pageLand) .myNotes .noteCols button[data-dir="up"] i::after { content: " ▲"; }
+  :where(body.pageLand) .myNotes .noteCols button[data-dir="down"] i::after { content: " ▼"; }
+  :where(body.pageLand) .myNotes .cSt { flex-direction: column; align-items: flex-start; }
+}
+@media (max-height: 500px) { .myNotes .noteFilters select, .myNotes .noteFilters input { min-height: 32px; font-size: 13px; } .myNotes .noteFilters { gap: 4px; margin: 2px 0; } .myNotes .noteFilters input { flex: 1 1 100%; } }
+
+/* A frame of the UI catalog: the catalog page has the Feedback button. */
+body.catalogFrame #fbToggle { display: none !important; }
+
+/* The loading spinner (chrome/spinner.ts): a gold ring turning, centred in its room. */
+.spinner { width: 36px; height: 36px; margin: auto; border-radius: 50%; border: 4px solid rgba(232, 200, 120, 0.25); border-top-color: var(--gold); animation: spin 0.9s linear infinite; box-sizing: border-box; }
+.mvFit > .spinner { align-self: center; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } }
+
+/* ☰ → One-handed (chrome/layouts.ts): three big choices in a row. */
+.thumbsPanel .thumbRow { display: flex; gap: 8px; padding: 8px; }
+.thumbsPanel .thumbRow button { flex: 1; min-height: 48px; font-size: 16px; }
+.thumbsPanel .thumbRow button[aria-pressed=true] { border-color: var(--gold); color: var(--gold); }
+.layoutsPanel .camRow { display: flex; gap: 8px; padding: 0 8px 8px; }
+.layoutsPanel .camRow button { flex: 1; min-height: 48px; font-size: 16px; }
+.layoutsPanel .camRow button[aria-pressed=true] { border-color: var(--gold); color: var(--gold); }
+
+/* A demo's game laid out as another layout (howto.ts morph): faded while it redraws, the room changing shape. */
+.mvStage .mvWorld { transition: transform 0.55s ease, opacity 0.25s; }
+.mvStage.morph .mvWorld { opacity: 0; }
+/* Point and send: the kind bubble beside the mark (feedback/touch.ts); a tap on a chip sends the note. */
+#fbPick .fbCats { position: fixed; display: flex; flex-direction: column; gap: 6px; padding: 6px; background: rgba(36, 28, 18, 0.95); border: 1px solid #7a5d30; border-radius: 6px; box-shadow: 0 2px 8px #000a; z-index: 1; }
+#fbPick .fbCats[hidden] { display: none; }
+#fbPick .fbCats button { min-height: 44px; min-width: 120px; font-size: 17px; }
+
+/* ☰ → Play (chrome/iconMenu.ts): its tile twice as wide, first; its window's jumps as the menu's tiles, the page's own
+   set-up (armies, map) under them, the rest as plain items. ☰ → the language tile opens the picker (langPanel). */
+#iconMenu .cell:has(> button.tile[data-key="play"]) { grid-column: span 2; }
+#toolbar #iconMenu button.tile[data-key="play"] { max-width: calc(var(--tw) * 2 + 6px); aspect-ratio: 132 / 36; }
+.playPanel, .langPanel { width: min(460px, calc(var(--page-w) - 24px)); font-size: 15px; }
+.playPanel .playJumps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 10px 0; }
+.playPanel .cell { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.playPanel .cap { font-size: 14px; text-align: center; }
+.playPanel button.tile { width: 100%; aspect-ratio: 64 / 40; padding: 0; border: 1px solid #000; background: linear-gradient(#4a3520, #2b1e11); box-shadow: inset 1px 1px 0 #a3824e, inset -1px -1px 0 #120c06; color: var(--gold); }
+.playPanel button.tile::before { font-size: 26px; }
+.playPanel .playSetup { display: grid; gap: 6px; padding: 8px 0; border-top: 1px solid #5a4526; }
+.playPanel .playSetup > b { color: var(--gold); font-weight: normal; }
+.playPanel .playSetup #battleControls, .playPanel .playSetup #mapControls { border: 0; }
+.playPanel .playMore { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 8px; border-top: 1px solid #5a4526; }
+.langPanel .langList { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 10px; }
+.langPanel .langPick { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 4px 10px; text-align: left; background: linear-gradient(#4a3520, #2b1e11); border: 1px solid #000; color: var(--text); font-size: 16px; box-shadow: inset 1px 1px 0 #a3824e, inset -1px -1px 0 #120c06; }
+.langPanel .langPick b { font: 700 20px/1 Georgia, serif; color: var(--gold); min-width: 34px; }
+.langPanel .langPick { flex-wrap: wrap; }
+.langPanel .langList.withNotes { grid-template-columns: 1fr; }
+.langPanel .langRow { display: flex; gap: 8px; align-items: stretch; }
+.langPanel .langRow .langPick { flex: 1; min-width: 0; }
+.langPanel .langNote { flex-basis: 100%; margin: 0 0 4px 44px; font-size: 14px; line-height: 1.3; color: #c8b88a; white-space: normal; overflow-wrap: anywhere; }
+.langPanel .langNote.full { color: #9be37a; }
+.langPanel .langAdd { flex: none; min-height: 48px; padding: 4px 14px; background: linear-gradient(#5a4318, #3a2a10); border: 1px solid #b8913c; color: var(--gold); font-size: 15px; }
+.langPanel .langPick.on { border-color: var(--gold); box-shadow: 0 0 6px rgba(255, 220, 120, 0.45); }
+
+/* The connection lost (online.ts, EXTRAS netStatus): Feedback wears an "offline" tag (with the notes kept on the device),
+   what needs the server is greyed (a press says why), and the lost / back notes come at the top. */
+#netTag { position: absolute; left: 50%; bottom: -9px; transform: translateX(-50%); padding: 0 4px; font: bold 10px/13px system-ui, sans-serif; color: #fff; background: #8a3a2a; border-radius: 3px; white-space: nowrap; pointer-events: none; }
+#netTag[hidden] { display: none; }
+body.offline [data-net]:not([data-net="quiet"]) { opacity: 0.45; filter: grayscale(1); }
+#netToast { background: rgba(20, 14, 8, 0.94) !important; pointer-events: auto; cursor: pointer; width: max-content; max-width: min(560px, calc(var(--page-w, 100vw) - 32px)); text-align: center; line-height: 1.35; }
+/* A touch screen: under ☰ and Feedback (along the top there), not over them. */
+:where(body.coarse) #netToast { top: calc(58px + var(--safe-top, 0px)); }
+:where(body.coarse.pageLand) #netToast { max-width: calc(var(--page-w, 100vw) - 168px); }
+
+/* While a right-click pop-up is up, no cursor over the game (as the original and VCMI's CRClickPopupInt hide it). */
+canvas.popupHeld {
+  cursor: none !important;
+}

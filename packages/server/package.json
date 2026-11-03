@@ -1,0 +1,12 @@
+{
+  "name": "@heroes/server",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@heroes/core": "*",
+    "@heroes/formats": "*"
+  }
+}

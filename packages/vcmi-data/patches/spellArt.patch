@@ -1,0 +1,31 @@
+--- spellArt.ts (generated)
++++ spellArt.ts (with our fixes)
+~23 fb5dec68
+  @12+0 ,"sound":"QUIKSAND"
+~24 6df0e254
+  @12+0 ,"sound":"LANDMINE"
+~77 6a924809
+  @13+0 "hit":["C18SPW0"],
+~83 e247526f
+  @11+1 "CREATURE"
+~84 dd1656cf
+  @11+1 "CREATURE"
+~85 0eec8233
+  @11+1 "CREATURE"
+~86 6e52de93
+  @11+1 "CREATURE"
+~87 07bacc77
+  @11+1 "CREATURE"
+~88 da91e695
+  @11+1 "CREATURE"
+~89 77cb0e60
+  @11+1 "CREATURE"
+~90 32b9bed5
+  @11+1 "CREATURE"
+~91 c2300fd0
+  @11+1 "CREATURE"
+~92 30df53c1
+  @11+1 "CREATURE"
+~93 cb379828
+  @11+1 "CREATURE"
+-94 1d4c274a

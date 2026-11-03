@@ -1,0 +1,17 @@
+--- specialtyData.ts (generated)
++++ specialtyData.ts (with our fixes)
+~206 98dc33d1
+  @1+1 177
+  @5+1 "creatures"
+  @8+4 146]
+  @13+1 "creatureLevel"
+  @15+3 5
+~207 d81ef2df
+  @1+1 178
+  @5+1 "skill"
+  @7+3 28
+~208 a00fd063
+  @1+1 179
+  @5+1 "creatures"
+  @8+17 138
+-209 6677812e

@@ -1,0 +1,226 @@
+/* The players' chat (chat.ts): a modern group chat, deliberately not in the original's frame and textures
+   (2026-10-24: clarity over fidelity here). Full screen on phones and tablets, a tall window on a desktop;
+   the avatars are still the game's portraits and the colours stay warm. The root has its own class (chatRoom),
+   so the page-panel rules in style.css / panels.css do not reach it; ID selectors win over their !important. */
+#chatPanel#chatPanel {
+  --c-bg: #15110b;
+  --c-bar: #1f1810;
+  --c-line: #33291a;
+  --c-field: #2a2216;
+  --c-text: #f1e8d4;
+  --c-muted: #9a8a6a;
+  --c-accent: #e8c860;
+  --c-mine: #2b2618;
+  --c-link: #8fc8f5;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font: 16px/1.35 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding: var(--safe-top) var(--safe-right) 0 var(--safe-left);
+  overscroll-behavior: contain;
+}
+#chatPanel#chatPanel * { box-sizing: border-box; text-shadow: none; }
+#chatPanel#chatPanel button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+@media (min-width: 900px) and (min-height: 600px) {
+  #chatPanel#chatPanel { inset: 4dvh auto 4dvh 50%; transform: translateX(-50%); width: min(780px, calc(100vw - 48px)); border-radius: 12px; border: 1px solid var(--c-line); box-shadow: 0 12px 48px rgba(0, 0, 0, 0.7); overflow: hidden; padding: 0; }
+}
+
+/* Header */
+#chatPanel#chatPanel .head { flex: none; display: flex; align-items: center; gap: 4px; height: 56px; padding: 0 8px; background: var(--c-bar); border-bottom: 1px solid var(--c-line); margin: 0; color: var(--c-text); }
+#chatPanel#chatPanel .head .title { flex: 1; min-width: 0; font-size: 19px; font-weight: 600; padding-left: 4px; }
+/* Where the page's Feedback button sits while the room is open (chat.ts slot, style.css body.chatRoomOpen). */
+#chatPanel#chatPanel .head .fbSlot { flex: none; width: 44px; height: 44px; }
+#chatPanel#chatPanel .head .title small { display: block; font-size: 12px; font-weight: 400; color: var(--c-muted); }
+#chatPanel#chatPanel .hbtn { flex: none; width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 0 !important; border-radius: 50% !important; background: transparent !important; color: var(--c-muted) !important; box-shadow: none !important; filter: none !important; }
+#chatPanel#chatPanel .hbtn:active { background: var(--c-field) !important; color: var(--c-accent) !important; }
+@media (hover: hover) { #chatPanel#chatPanel .hbtn:hover { background: var(--c-field) !important; color: var(--c-accent) !important; } }
+#chatPanel#chatPanel .hbtn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#chatPanel#chatPanel .hbtn.on svg { color: var(--c-accent); }
+#chatPanel#chatPanel .bell b { position: absolute; font-size: 11px; margin: 14px 0 0 16px; color: var(--c-accent); }
+#chatPanel#chatPanel .bell { position: relative; }
+#chatPanel#chatPanel .meAv { flex: none; width: 40px; height: 40px; padding: 0; border: 2px solid var(--c-line) !important; border-radius: 50% !important; overflow: hidden; background: var(--c-field) !important; box-shadow: none !important; margin-left: 2px; }
+#chatPanel#chatPanel img.av { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 50% !important; background: var(--c-field); box-shadow: none !important; border: 0 !important; image-rendering: auto; }
+
+/* Language rooms: one tab each, underlined when shown, a count of others' unread words on the others */
+#chatPanel#chatPanel .chatTabs { flex: none; display: flex; margin: 0; padding: 0 8px; background: var(--c-bar); border-bottom: 1px solid var(--c-line); }
+#chatPanel#chatPanel .chatTabs button { flex: 1; min-width: 0; height: 44px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0 6px; border: 0 !important; border-bottom: 3px solid transparent !important; border-radius: 0 !important; background: transparent !important; color: var(--c-muted) !important; box-shadow: none !important; font-size: 16px; font-weight: 600; white-space: nowrap; }
+#chatPanel#chatPanel .chatTabs button.on { color: var(--c-accent) !important; border-bottom-color: var(--c-accent) !important; }
+#chatPanel#chatPanel .chatTabs b { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--c-accent); color: var(--c-bg); font-size: 12px; line-height: 20px; }
+
+/* Invitation */
+#chatPanel#chatPanel .inviteBar { flex: none; display: flex; align-items: center; gap: 8px; margin: 0; padding: 8px 12px; background: #1f3a16 !important; color: var(--c-text); border: 0 !important; box-shadow: none !important; border-bottom: 1px solid #3a6a2a !important; }
+#chatPanel#chatPanel .inviteBar[hidden] { display: none; }
+#chatPanel#chatPanel .inviteBar span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#chatPanel#chatPanel .inviteBar button { min-height: 40px; padding: 0 16px; border: 0 !important; border-radius: 20px !important; background: #3f8a2a !important; color: #fff !important; box-shadow: none !important; font-weight: 600; }
+#chatPanel#chatPanel .inviteBar button.no { background: transparent !important; color: var(--c-muted) !important; padding: 0 10px; }
+
+/* The room */
+#chatPanel#chatPanel .chatWrap { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+#chatPanel#chatPanel .chatList { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; padding: 8px 0 12px; }
+#chatPanel#chatPanel .chatEmpty { color: var(--c-muted); text-align: center; padding: 24px 16px; }
+#chatPanel#chatPanel .day { display: flex; align-items: center; gap: 10px; margin: 14px 12px 6px; color: var(--c-muted); font-size: 12px; font-weight: 600; }
+#chatPanel#chatPanel .day::before, #chatPanel#chatPanel .day::after { content: ""; flex: 1; height: 1px; background: var(--c-line); }
+
+#chatPanel#chatPanel .chatMsg { position: relative; display: flex; gap: 12px; margin: 0; padding: 2px 12px 2px 12px; border: 0 !important; overflow-wrap: anywhere; }
+#chatPanel#chatPanel .chatMsg.first { margin-top: 12px; padding-top: 4px; }
+@media (hover: hover) { #chatPanel#chatPanel .chatMsg:hover { background: rgba(255, 255, 255, 0.035); } }
+#chatPanel#chatPanel .chatMsg .gutter { flex: none; width: 40px; }
+#chatPanel#chatPanel .chatMsg .gutter img.av { width: 40px; height: 40px; }
+#chatPanel#chatPanel .chatMsg .gutter img.av[data-by] { cursor: pointer; }
+#chatPanel#chatPanel .chatMsg .gutter .t { display: none; font-size: 10px; color: var(--c-muted); text-align: center; line-height: 22px; }
+@media (hover: hover) { #chatPanel#chatPanel .chatMsg:not(.first):hover .gutter .t { display: block; } }
+#chatPanel#chatPanel .said { flex: 1; min-width: 0; padding-right: 36px; }
+#chatPanel#chatPanel .said .line { display: flex; align-items: baseline; gap: 8px; }
+#chatPanel#chatPanel .who { font-weight: 600; color: var(--c-accent) !important; }
+#chatPanel#chatPanel .owner .who { color: var(--c-link) !important; }
+#chatPanel#chatPanel .mine .who { color: #8fd37a !important; }
+#chatPanel#chatPanel .when { color: var(--c-muted); font-size: 12px; }
+#chatPanel#chatPanel .txt { white-space: pre-wrap; }
+#chatPanel#chatPanel .orig { display: inline-block; margin: 0; padding: 4px 0 2px; min-height: 0; border: 0 !important; background: none !important; box-shadow: none !important; color: var(--c-muted) !important; font-size: 13px; text-align: left; cursor: pointer; }
+@media (pointer: coarse) { #chatPanel#chatPanel .orig { padding: 8px 0 6px; } }
+#chatPanel#chatPanel .orig:active { color: var(--c-link) !important; text-decoration: underline; }
+@media (hover: hover) { #chatPanel#chatPanel .orig:hover { color: var(--c-link) !important; text-decoration: underline; } }
+#chatPanel#chatPanel .shot { display: block; max-width: min(300px, 100%); max-height: 240px; margin-top: 6px; border-radius: 10px; border: 0 !important; box-shadow: none !important; cursor: zoom-in; background: var(--c-field); }
+#chatPanel#chatPanel .rep { position: absolute; right: 8px; top: 2px; width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 0 !important; border-radius: 50% !important; background: transparent !important; color: var(--c-muted) !important; box-shadow: none !important; opacity: 0.55; }
+#chatPanel#chatPanel .rep svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@media (hover: hover) { #chatPanel#chatPanel .rep { opacity: 0; } #chatPanel#chatPanel .chatMsg:hover .rep { opacity: 1; } }
+#chatPanel#chatPanel .rep:active { color: var(--c-accent) !important; background: var(--c-field) !important; }
+@media (hover: hover) { #chatPanel#chatPanel .rep:hover { color: var(--c-accent) !important; background: var(--c-field) !important; } }
+
+/* Reply threads: a pill under the message, the answers indented behind a line */
+#chatPanel#chatPanel .thread { display: inline-flex; align-items: center; gap: 6px; margin: 2px 12px 4px 64px; padding: 6px 12px; border: 0 !important; border-radius: 14px !important; background: var(--c-field) !important; color: var(--c-link) !important; box-shadow: none !important; font-size: 14px; font-weight: 600; }
+#chatPanel#chatPanel .answers { margin: 0 0 6px 40px; padding-left: 0; border-left: 3px solid var(--c-line) !important; }
+#chatPanel#chatPanel .answers .chatMsg.first { margin-top: 4px; }
+#chatPanel#chatPanel .answers .gutter, #chatPanel#chatPanel .answers .gutter img.av { width: 32px; height: 32px; }
+#chatPanel#chatPanel .answers .gutter { width: 32px; }
+
+/* Timeline events (notes sent on, updates deployed): quiet lines, so the players' words lead the room. */
+#chatPanel#chatPanel .chatEvent { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 4px 12px; padding: 3px 10px; min-height: 30px; border: 0 !important; color: var(--c-muted) !important; font-size: 13px; text-align: center; background: rgba(143, 200, 245, 0.04); border-radius: 12px; }
+#chatPanel#chatPanel .chatEvent img.av { width: 18px; height: 18px; flex: none; }
+/* Events one after another: one line ("the agent: 47 updates deployed · …  ▸"), opening to each of them (chat.ts eventGroup). */
+/* (Every fold's arrow after its words, one look for the run and for an event's own list of updates.) */
+#chatPanel#chatPanel :is(.chatEvents > summary, .chatEvent details > summary) { list-style: none; cursor: pointer; }
+#chatPanel#chatPanel :is(.chatEvents > summary, .chatEvent details > summary)::-webkit-details-marker { display: none; }
+#chatPanel#chatPanel :is(.chatEvents > summary, .chatEvent details > summary)::after { content: " ▸"; margin-left: 2px; }
+#chatPanel#chatPanel :is(.chatEvents[open] > summary, .chatEvent details[open] > summary)::after { content: " ▾"; }
+#chatPanel#chatPanel .chatEvents[open] { margin: 0 0 6px; }
+#chatPanel#chatPanel .chatEvents[open] > .chatEvent { margin-left: 28px; margin-right: 28px; }
+#chatPanel#chatPanel .chatEvent summary { cursor: pointer; }
+#chatPanel#chatPanel .chatEvent ul { margin: 4px 0 0; padding-left: 18px; text-align: left; color: var(--c-text) !important; }
+
+/* Jump to the newest */
+#chatPanel#chatPanel .jump { position: absolute; right: 14px; bottom: 12px; min-width: 44px; height: 44px; padding: 0 12px; display: none; align-items: center; justify-content: center; gap: 6px; border: 0 !important; border-radius: 22px !important; background: var(--c-accent) !important; color: #1a1305 !important; font-weight: 700; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6) !important; }
+#chatPanel#chatPanel .jump.show { display: inline-flex; }
+#chatPanel#chatPanel .jump svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Under the list: the reply and picture chips, then the input bar */
+#chatPanel#chatPanel .replyBar, #chatPanel#chatPanel .attachBar { flex: none; display: flex; align-items: center; gap: 8px; margin: 0; padding: 6px 8px 6px 14px; background: var(--c-bar) !important; border: 0 !important; border-top: 1px solid var(--c-line) !important; border-radius: 0 !important; box-shadow: none !important; color: var(--c-muted); font-size: 14px; }
+#chatPanel#chatPanel .replyBar[hidden], #chatPanel#chatPanel .attachBar[hidden] { display: none; }
+#chatPanel#chatPanel .replyBar span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-left: 3px solid var(--c-link); padding-left: 8px; }
+#chatPanel#chatPanel .attachBar img { height: 52px; border-radius: 8px; border: 0 !important; box-shadow: none !important; }
+#chatPanel#chatPanel .attachBar { justify-content: space-between; }
+#chatPanel#chatPanel .chip-x { width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: 0 !important; border-radius: 50% !important; background: transparent !important; color: var(--c-muted) !important; box-shadow: none !important; font-size: 22px; line-height: 1; }
+#chatPanel#chatPanel form { flex: none; display: flex; align-items: flex-end; gap: 6px; margin: 0; padding: 8px 8px calc(8px + var(--safe-bottom)) 8px; background: var(--c-bar); border-top: 1px solid var(--c-line); }
+#chatPanel#chatPanel form .field { flex: 1; min-width: 0; display: flex; align-items: center; background: var(--c-field); border-radius: 22px; padding-left: 4px; }
+#chatPanel#chatPanel form input { flex: 1; min-width: 0; height: 44px; padding: 0 8px; font-size: 16px; background: transparent !important; color: var(--c-text) !important; border: 0 !important; box-shadow: none !important; outline: 0 !important; border-radius: 0 !important; }
+#chatPanel#chatPanel form input::placeholder { color: var(--c-muted); }
+#chatPanel#chatPanel form .ibtn { flex: none; width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 0 !important; border-radius: 50% !important; background: transparent !important; color: var(--c-muted) !important; box-shadow: none !important; filter: none !important; }
+#chatPanel#chatPanel form .ibtn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#chatPanel#chatPanel form .ibtn.mic.on { background: #b3321f !important; color: #fff !important; }
+#chatPanel#chatPanel form .send { background: var(--c-accent) !important; color: #1a1305 !important; }
+#chatPanel#chatPanel form .send:disabled { background: var(--c-field) !important; color: var(--c-muted) !important; }
+#chatPanel#chatPanel form .send svg { fill: currentColor; stroke: none; width: 22px; height: 22px; }
+
+/* Sheets laid over the room: people, profile, leaderboard, avatars, attachments */
+#chatPanel#chatPanel .chatPick, #chatPanel#chatPanel .chatPeople, #chatPanel#chatPanel .chatProfile, #chatPanel#chatPanel .chatBoard { position: absolute !important; inset: 56px 0 0 0 !important; max-height: none !important; display: flex; flex-direction: column; background: var(--c-bg) !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; padding: 0 !important; z-index: 5; overflow-y: auto; }
+#chatPanel#chatPanel .chatAttach { position: absolute !important; left: 0 !important; right: 0 !important; bottom: 0 !important; inset-block-start: auto !important; max-height: 70% !important; overflow-y: auto; background: var(--c-bar) !important; border: 0 !important; border-top: 1px solid var(--c-line) !important; border-radius: 16px 16px 0 0 !important; box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.5) !important; padding: 12px !important; z-index: 6; }
+#chatPanel#chatPanel .tabs, #chatPanel#chatPanel .cap { display: flex; align-items: center; gap: 8px; padding: 8px 12px; color: var(--c-text) !important; font-weight: 600; }
+#chatPanel#chatPanel .tabs span, #chatPanel#chatPanel .cap { flex: 1; }
+#chatPanel#chatPanel .cap { flex: none; justify-content: space-between; }
+#chatPanel#chatPanel .tabs button:not(.x), #chatPanel#chatPanel .cap button, #chatPanel#chatPanel .tabs .x, #chatPanel#chatPanel .cap .x { min-height: 40px; padding: 0 16px; border: 0 !important; border-radius: 20px !important; background: var(--c-field) !important; color: var(--c-text) !important; box-shadow: none !important; }
+#chatPanel#chatPanel .tabs button.on { background: var(--c-accent) !important; color: #1a1305 !important; }
+#chatPanel#chatPanel .tabs .x, #chatPanel#chatPanel .cap .x { margin-left: auto; width: 40px; padding: 0; position: relative; font-size: 0; }
+#chatPanel#chatPanel .tabs .x::before, #chatPanel#chatPanel .cap .x::before { content: "✕"; font-size: 17px; }
+#chatPanel#chatPanel .tabs .x img, #chatPanel#chatPanel .cap .x img { display: none; }
+#chatPanel#chatPanel .chatPick .grid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; padding: 8px 12px 16px; align-content: start; grid-auto-rows: max-content; }
+#chatPanel#chatPanel .chatPick .cell { padding: 0 !important; aspect-ratio: 1; height: auto; border: 0 !important; border-radius: 50% !important; overflow: hidden; background: var(--c-field) !important; box-shadow: none !important; }
+#chatPanel#chatPanel .chatPick .cell img { width: 100%; height: 100%; object-fit: cover; border-radius: 0; }
+#chatPanel#chatPanel .chatPeople .list { flex: 1; overflow-y: auto; padding: 0 8px 12px; }
+#chatPanel#chatPanel .chatPeople .person { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 8px 10px; margin: 0; border: 0 !important; border-radius: 10px !important; background: transparent !important; box-shadow: none !important; text-align: left; }
+#chatPanel#chatPanel .chatPeople .person:active { background: var(--c-field) !important; }
+@media (hover: hover) { #chatPanel#chatPanel .chatPeople .person:hover { background: var(--c-field) !important; } }
+#chatPanel#chatPanel .chatPeople .person img.av { flex: none; width: 40px; height: 40px; }
+#chatPanel#chatPanel .chatPeople .person .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--c-text); }
+#chatPanel#chatPanel .chatPeople .person .s { color: var(--c-muted); font-size: 13px; }
+#chatPanel#chatPanel .chatProfile .body { display: flex; align-items: center; gap: 16px; padding: 12px 16px; }
+#chatPanel#chatPanel .chatProfile img.av.big { flex: none; width: 88px; height: 88px; }
+#chatPanel#chatPanel .chatProfile .who { flex: 1; min-width: 0; }
+#chatPanel#chatPanel .chatProfile h3 { margin: 0 0 8px; border: 0; color: var(--c-text); font-size: 22px; overflow-wrap: anywhere; }
+#chatPanel#chatPanel .chatProfile h3 small { color: var(--c-muted); font-size: 12px; border: 0; border-radius: 6px; background: var(--c-field); padding: 2px 6px; vertical-align: middle; box-shadow: none; }
+#chatPanel#chatPanel .chatProfile .stats { display: flex; flex-wrap: wrap; gap: 8px; }
+#chatPanel#chatPanel .chatProfile .stat { flex: 1 1 80px; min-width: 0; background: var(--c-field) !important; border-radius: 10px !important; padding: 8px; text-align: center; box-shadow: none !important; }
+#chatPanel#chatPanel .chatProfile .stat b { display: block; font-size: 18px; color: var(--c-text); }
+#chatPanel#chatPanel .chatProfile .stat span { color: var(--c-muted); font-size: 12px; }
+#chatPanel#chatPanel .chatProfile .act { margin-top: auto; padding: 12px 16px calc(16px + var(--safe-bottom)); text-align: center; }
+/* Without its icon (no game files yet) a wide gold button; with it, the original's button art (htmlIcons.ts), centred. */
+#chatPanel#chatPanel .chatProfile .act .go:not(.art) { width: 100%; min-height: 52px; border: 0 !important; border-radius: 26px !important; background: var(--c-accent) !important; color: #1a1305 !important; font-weight: 700; box-shadow: none !important; }
+#chatPanel#chatPanel .chatProfile .act .hint { margin: 8px 0 0; color: var(--c-muted); font-size: 13px; }
+#chatPanel#chatPanel .chatBoard table { width: calc(100% - 24px); margin: 0 12px; border-collapse: collapse; }
+#chatPanel#chatPanel .chatBoard th { color: var(--c-muted); font-size: 12px; font-weight: 600; text-align: right; padding: 4px; }
+#chatPanel#chatPanel .chatBoard td { padding: 8px 4px; text-align: right; border: 0; border-top: 1px solid var(--c-line) !important; }
+#chatPanel#chatPanel .chatBoard td:nth-child(2) { text-align: left; white-space: nowrap; }
+#chatPanel#chatPanel .chatBoard img.av { display: inline-block; width: 26px; height: 26px; vertical-align: middle; }
+#chatPanel#chatPanel .chatAttach .row { display: flex; gap: 10px; overflow-x: auto; }
+#chatPanel#chatPanel .chatAttach .pic { flex: none; padding: 0 !important; display: flex; flex-direction: column; border: 0 !important; border-radius: 10px !important; overflow: hidden; background: var(--c-field) !important; box-shadow: none !important; font-size: 13px; }
+#chatPanel#chatPanel .chatAttach .pic img { height: 96px; width: auto; display: block; border-radius: 0; }
+#chatPanel#chatPanel .chatAttach .pic span { padding: 4px 8px; color: var(--c-accent); }
+
+/* A phone sideways: low and wide. Keep the right-hand 72 px (Android's navigation bar) free of controls. */
+@media (max-height: 500px) {
+  #chatPanel#chatPanel .head { height: 44px; }
+  #chatPanel#chatPanel .hbtn { width: 40px; height: 40px; }
+  #chatPanel#chatPanel .chatPick, #chatPanel#chatPanel .chatPeople, #chatPanel#chatPanel .chatProfile, #chatPanel#chatPanel .chatBoard { inset-block-start: 44px !important; }
+  #chatPanel#chatPanel .head, #chatPanel#chatPanel form, #chatPanel#chatPanel .replyBar, #chatPanel#chatPanel .attachBar, #chatPanel#chatPanel .inviteBar, #chatPanel#chatPanel .chatTabs { padding-right: max(8px, 72px); }
+  #chatPanel#chatPanel .chatTabs button { height: 36px; }
+  #chatPanel#chatPanel .jump { right: 80px; bottom: 8px; }
+  #chatPanel#chatPanel form { padding-top: 4px; padding-bottom: 4px; }
+  #chatPanel#chatPanel form input, #chatPanel#chatPanel form .ibtn { height: 40px; }
+  #chatPanel#chatPanel .chatMsg.first { margin-top: 8px; }
+  #chatPanel#chatPanel .inviteBar { padding-top: 2px; padding-bottom: 2px; }
+  #chatPanel#chatPanel .inviteBar button { min-height: 34px; }
+  #chatPanel#chatPanel .chatProfile .act .hint { display: none; }
+  #chatPanel#chatPanel .chatProfile .body { padding: 4px 16px; }
+  #chatPanel#chatPanel .chatProfile img.av.big { width: 56px; height: 56px; }
+}
+@media (max-width: 480px) {
+  #chatPanel#chatPanel .said { padding-right: 30px; }
+  #chatPanel#chatPanel .chatMsg { gap: 10px; }
+}
+
+/* Reactions (src/community/reactions.ts): chips under a line, the ☺ on hover, the row of emojis */
+#chatPanel#chatPanel .reacts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+#chatPanel#chatPanel .reacts.center { justify-content: center; margin: -6px 12px 8px; }
+#chatPanel#chatPanel .rx { display: inline-flex; align-items: center; gap: 4px; min-height: 30px; min-width: 40px; padding: 0 9px; border: 1px solid var(--c-line) !important; border-radius: 15px !important; background: var(--c-field) !important; box-shadow: none !important; font-size: 16px; line-height: 1; color: var(--c-text) !important; }
+#chatPanel#chatPanel .rx b { font-size: 13px; font-weight: 600; }
+#chatPanel#chatPanel .rx.mine { border-color: var(--c-accent) !important; background: rgba(230, 190, 90, 0.16) !important; }
+#chatPanel#chatPanel .chatEvent { position: relative; }
+#chatPanel#chatPanel .rxb { position: absolute; right: 44px; top: 2px; width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 0 !important; border-radius: 50% !important; background: transparent !important; color: var(--c-muted) !important; box-shadow: none !important; opacity: 0; }
+#chatPanel#chatPanel .chatEvent .rxb { right: 2px; top: 50%; margin-top: -17px; }
+#chatPanel#chatPanel .rxb svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@media (hover: hover) { #chatPanel#chatPanel :is(.chatMsg, .chatEvent):hover .rxb { opacity: 1; } }
+@media (hover: none) { #chatPanel#chatPanel .rxb { display: none; } #chatPanel#chatPanel :is(.chatMsg, .chatEvent) { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; } }
+@media (hover: hover) { #chatPanel#chatPanel .rxb:hover { color: var(--c-accent) !important; background: var(--c-field) !important; } }
+#chatPanel#chatPanel .rxOn { background: rgba(255, 255, 255, 0.07) !important; }
+#chatPanel#chatPanel .rxPick { position: absolute; left: 50%; transform: translateX(-50%); z-index: 5; max-width: calc(100% - 16px); padding: 6px; border-radius: 26px; background: var(--c-bar); border: 1px solid var(--c-line); box-shadow: 0 4px 18px rgba(0, 0, 0, 0.7); }
+#chatPanel#chatPanel .rxPick .row { display: flex; gap: 2px; }
+#chatPanel#chatPanel .rxPick .row button { width: 46px; height: 46px; padding: 0; display: grid; place-items: center; border: 0 !important; border-radius: 50% !important; background: transparent !important; box-shadow: none !important; font-size: 28px; line-height: 1; }
+#chatPanel#chatPanel .rxPick .row button.mine { background: var(--c-field) !important; }
+@media (hover: hover) { #chatPanel#chatPanel .rxPick .row button:hover { background: var(--c-field) !important; } }
+#chatPanel#chatPanel .rxPick .row button.mine { outline: 2px solid var(--c-accent); }
+#chatPanel#chatPanel .rxPick ul { list-style: none; margin: 6px 8px 4px; padding: 6px 0 0; border-top: 1px solid var(--c-line); max-height: 140px; overflow-y: auto; font-size: 15px; color: var(--c-text); }
+#chatPanel#chatPanel .rxPick li { display: flex; gap: 8px; padding: 2px 0; }
+@media (max-width: 480px) { #chatPanel#chatPanel .rxPick .row button { width: 42px; height: 42px; font-size: 26px; } }

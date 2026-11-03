@@ -1,0 +1,25 @@
+export interface HeroInfo {
+  key: string;
+  heroClass: number;
+  female: boolean;
+  /** Up to three [creature, min, max] stacks. */
+  army: [number, number, number][];
+  /** [skill key, level 1-3]. */
+  skills: [string, number][];
+  /** Large and small portrait images (PCX names without extension). */
+  portrait?: [string, string];
+  /** The English name, for heroes the game's HOTRAITS.TXT doesn't list. */
+  name?: string;
+  /** Campaign heroes: never offered in taverns or picked at random. */
+  special?: boolean;
+}
+
+export interface HeroClassInfo {
+  key: string;
+  faction: string;
+  affinity: string;
+  /** Adventure map sprite. */
+  mapDef: string;
+  /** Battle sprite [male, female]. */
+  battleDef: [string, string];
+}

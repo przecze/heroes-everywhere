@@ -1,0 +1,14 @@
+export interface ArtifactBonus {
+  type: string;
+  subtype?: string;
+  val?: number;
+  /** OPPOSITE_SIDE: applies to the enemy; a creature ability (DRAGON_NATURE): only creatures with it. */
+  limiters?: string[];
+}
+export interface ArtifactInfo {
+  key: string;
+  bonuses?: ArtifactBonus[];
+  warMachine?: string;
+  /** Combination artifacts: the parts' keys. */
+  components?: string[];
+}

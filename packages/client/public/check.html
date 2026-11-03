@@ -1,0 +1,119 @@
+<!doctype html>
+<!-- What this browser can do for the game (2026-10-27, on the PS5: "will full screen work, will music work"):
+     one page, no game code, old-browser JavaScript, so it runs where the game itself may not. It shows the answers in
+     big type and sends them to the server (feedback/telemetry.jsonl, client "check"). Open /check.html. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<meta name="robots" content="noindex">
+<title>Browser check</title>
+<style>
+  body { background: #111; color: #e8e0c8; font: 22px Georgia, serif; margin: 0; padding: 24px; }
+  h1 { font-size: 30px; color: #e8c25a; margin: 0 0 12px; }
+  table { border-collapse: collapse; }
+  td { padding: 4px 16px 4px 0; vertical-align: top; }
+  .ok { color: #7fd17f; } .no { color: #f07070; }
+  button { font: 24px Georgia, serif; padding: 14px 26px; margin: 12px 12px 0 0; background: #3a2a14; color: #f0e0b0; border: 2px solid #b08a40; }
+  button:focus { outline: 4px solid #e8c25a; }
+  #log { margin-top: 16px; white-space: pre-wrap; font-size: 18px; }
+</style>
+</head>
+<body>
+<h1>What this browser can do for the game</h1>
+<table id="t"></table>
+<div>
+  <button id="beep">Play a beep</button>
+  <button id="music">Play the music</button>
+  <button id="full">Full screen</button>
+  <button id="game" onclick="location.href='/'">Open the game</button>
+</div>
+<div id="log"></div>
+<script>
+(function () {
+  var out = { client: "check", at: new Date().toISOString(), ua: navigator.userAgent, screen: screen.width + "x" + screen.height + " @" + (window.devicePixelRatio || 1), tests: {}, presses: {} };
+  var t = document.getElementById("t"), log = document.getElementById("log");
+  function row(name, ok, detail) {
+    out.tests[name] = ok ? (detail || true) : (detail || false);
+    var tr = t.insertRow(), a = tr.insertCell(), b = tr.insertCell();
+    a.textContent = name;
+    b.textContent = (ok ? "yes" : "no") + (detail ? " (" + detail + ")" : "");
+    b.className = ok ? "ok" : "no";
+  }
+  function say(s) { log.textContent += s + "\n"; }
+  function send() { try { fetch("/__telemetry", { method: "POST", body: JSON.stringify(out) }); } catch (e) {} }
+  function test(name, f) { try { var r = f(); row(name, !!r, typeof r === "string" ? r : ""); } catch (e) { row(name, false, "error: " + e.message); } }
+
+  test("WebGL 2", function () { var g = document.createElement("canvas").getContext("webgl2"); return g && String(g.getParameter(g.VERSION)); });
+  test("WebGL 1", function () {
+    var g = document.createElement("canvas").getContext("webgl");
+    if (!g) return false;
+    var x = g.getExtension("WEBGL_debug_renderer_info");
+    return (x ? g.getParameter(x.UNMASKED_RENDERER_WEBGL) : "renderer hidden") + ", max texture " + g.getParameter(g.MAX_TEXTURE_SIZE);
+  });
+  test("Web Audio", function () { return !!(window.AudioContext || window.webkitAudioContext); });
+  test("MP3 in <audio>", function () { return document.createElement("audio").canPlayType("audio/mpeg") || false; });
+  test("Full screen API", function () {
+    var d = document.documentElement;
+    var api = d.requestFullscreen ? "requestFullscreen" : d.webkitRequestFullscreen ? "webkitRequestFullscreen" : "";
+    return api && api + ", enabled: " + (document.fullscreenEnabled !== undefined ? document.fullscreenEnabled : document.webkitFullscreenEnabled);
+  });
+  test("Gamepad API", function () { return !!navigator.getGamepads; });
+  test("Workers", function () { return typeof Worker !== "undefined"; });
+  test("DecompressionStream", function () { return typeof DecompressionStream !== "undefined"; });
+  test("structuredClone", function () { return typeof structuredClone !== "undefined"; });
+  test("WebAssembly", function () { return typeof WebAssembly !== "undefined"; });
+  test("Cache storage", function () { return typeof caches !== "undefined"; });
+  test("IndexedDB", function () { return typeof indexedDB !== "undefined" && !!indexedDB; });
+  test("Service worker", function () { return "serviceWorker" in navigator; });
+  test("localStorage", function () { localStorage.setItem("heroes.check", "1"); return localStorage.getItem("heroes.check") === "1"; });
+  test("Module scripts", function () { return "noModule" in document.createElement("script"); });
+  if (navigator.storage && navigator.storage.estimate)
+    navigator.storage.estimate().then(function (e) { row("Storage quota", true, Math.round(e.quota / 1048576) + " MB"); send(); }, function () {});
+  // A module worker, as the game's own server runs in one.
+  try {
+    var w = new Worker(URL.createObjectURL(new Blob(["postMessage(1)"], { type: "text/javascript" })), { type: "module" });
+    var done = false;
+    w.onmessage = function () { done = true; row("Module worker", true); send(); };
+    w.onerror = function (e) { done = true; row("Module worker", false, e.message || "error"); send(); };
+    setTimeout(function () { if (!done) { row("Module worker", false, "no answer"); send(); } }, 3000);
+  } catch (e) { row("Module worker", false, e.message); }
+  send();
+
+  var ctx = null;
+  document.getElementById("beep").onclick = function () {
+    try {
+      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+      ctx.resume && ctx.resume();
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.frequency.value = 440; g.gain.value = 0.2;
+      o.connect(g); g.connect(ctx.destination);
+      o.start(); o.stop(ctx.currentTime + 0.6);
+      say("Beep played (Web Audio, " + ctx.state + "). Did you hear it?");
+      out.presses.beep = ctx.state;
+    } catch (e) { say("Beep failed: " + e.message); out.presses.beep = "error: " + e.message; }
+    send();
+  };
+  var a = null;
+  document.getElementById("music").onclick = function () {
+    if (a && !a.paused) { a.pause(); say("Music paused."); return; }
+    a = a || new Audio("/music/MAINMENU.MP3");
+    a.volume = 0.5;
+    var p = a.play();
+    if (p && p.then) p.then(function () { say("Music playing (the main menu's)."); out.presses.music = "playing"; send(); }, function (e) { say("Music failed: " + e.message); out.presses.music = "error: " + e.message; send(); });
+    a.onerror = function () { say("Music file failed to load (" + (a.error && a.error.code) + ")."); out.presses.music = "load error " + (a.error && a.error.code); send(); };
+  };
+  document.getElementById("full").onclick = function () {
+    var d = document.documentElement, f = d.requestFullscreen || d.webkitRequestFullscreen;
+    if (!f) { say("No full screen API here."); out.presses.full = "no API"; return send(); }
+    try {
+      var p = f.call(d);
+      var check = function () { var on = !!(document.fullscreenElement || document.webkitFullscreenElement); say(on ? "Full screen: on." : "Full screen: refused."); out.presses.full = on ? "on" : "refused"; send(); };
+      if (p && p.then) p.then(check, function (e) { say("Full screen refused: " + e.message); out.presses.full = "refused: " + e.message; send(); });
+      else setTimeout(check, 500);
+    } catch (e) { say("Full screen failed: " + e.message); out.presses.full = "error: " + e.message; send(); }
+  };
+})();
+</script>
+</body>
+</html>

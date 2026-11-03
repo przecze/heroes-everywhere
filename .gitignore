@@ -1,0 +1,8 @@
+node_modules/
+packages/client/dist/
+.saves/
+rooms/
+installers/*
+!installers/README.txt
+packages/vcmi-data/upstream/
+packages/vcmi-data/src/

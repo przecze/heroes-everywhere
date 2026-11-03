@@ -1,0 +1,81 @@
+/* The page's layers, bottom to top (docs/layers.md; chrome/layers.ts has their Escape / Back and the freeze):
+     1. the game (#stage: the main menu, the map, a battle) and its own HTML parts (the lobby, First steps, the clocks);
+     2. the app's menu: one stack of menu views over the game (chat, My notes, Settings, How to, a view's frame:
+        Admin, the catalog...), the ☰ panel in front of them;
+     3. the ☰ and Feedback buttons, always on top;
+     4. a note being given: Feedback's box, the frozen picture, the voice bar, the frame on what is meant.
+   Loaded last: these z-indexes are the last word (the panels' own values stay within their layer's range). */
+:root {
+  --layer-menu: 40;
+  --layer-menu-front: 69;
+  --layer-buttons: 70;
+  --layer-note: 80;
+}
+
+/* 2: the menu views (their own values, 40-62, keep their order among themselves), the ☰ panel in front. */
+#viewLayer { z-index: var(--layer-menu) !important; }
+.myNotesBig { z-index: 63 !important; }
+#toolbar { z-index: var(--layer-menu-front) !important; }
+
+/* 3: the two buttons over everything but a note. */
+#menuToggle, #feedback:not(.open), body.chatRoomOpen #feedback:not(.open) { z-index: var(--layer-buttons) !important; }
+
+/* (The "new version" notice is the app's word to the player: with the buttons, over a menu view.) */
+.newBuild { z-index: var(--layer-buttons) !important; }
+
+/* 4: a note being given. */
+#feedback.open, body.chatRoomOpen #feedback.open { z-index: var(--layer-note) !important; }
+#fbPick, #voiceNote, #fbNote, body.chatRoomOpen #fbPick, body.chatRoomOpen #voiceNote { z-index: calc(var(--layer-note) + 1) !important; }
+#fbModes { z-index: var(--layer-note) !important; }
+.fbFlash, body.chatRoomOpen .fbFlash { z-index: calc(var(--layer-note) + 2) !important; }
+.pointFrame { z-index: calc(var(--layer-note) + 3) !important; }
+/* (Frozen under a note: nothing below takes a tap; chrome/layers.ts also holds back the keys and the game's ticker.) */
+body.noteGoing #viewLayer iframe { pointer-events: none; }
+
+/* A menu view's frame over the game (chrome/views.ts): the game's area (under the page bar on a computer), a head
+   with ✓ back to the game and the view's name, clear of the ☰ and Feedback buttons wherever the screen has them. */
+#viewLayer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  background: #14100a;
+}
+@media (pointer: fine) and (min-height: 561px) {
+  #viewLayer { top: 35px; }
+}
+#viewLayer .viewHead {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 var(--viewPadR, 12px) 0 var(--viewPadL, 12px);
+  background: var(--panel-bg, #2a2012);
+  border-bottom: 1px solid #5a4526;
+}
+#viewLayer .viewBack { flex: none; width: 44px; height: 40px; }
+#viewLayer h1 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font: normal 18px/48px Georgia, serif;
+  color: var(--gold, #e8c46a);
+  text-shadow: var(--shadow, 1px 1px 0 #000);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#viewLayer iframe { flex: 1; width: 100%; min-height: 0; border: 0; display: block; background: #14100a; }
+/* A phone held sideways: nothing in the right-hand 72 px (Android's navigation bar). */
+:where(body.coarse.pageShort) #viewLayer { right: 72px; }
+
+/* The app inside a view's frame: its page alone (the page around it has the menu, Feedback and the chat). */
+body.inView :is(#status, #menuToggle, #feedback, #toolbar) { display: none !important; }
+
+/* The welcome's cards (reels.ts) are a window on the game's layer: what ☰ opens (Layouts, One-handed, Settings…) comes over them. */
+.welcomeShade { z-index: 38 !important; }
+.advMessage.welcome { z-index: 39 !important; }

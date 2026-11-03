@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- The app icon for Android's shapes (circle, squircle...): full bleed, the shield inside the safe circle. -->
+  <rect width="512" height="512" fill="#1a130b"/>
+  <g transform="translate(256 259) scale(0.72) translate(-256 -259)">
+    <path d="M256 56 L432 120 L412 300 Q390 408 256 462 Q122 408 100 300 L80 120 Z" fill="#e8c46a"/>
+    <path d="M256 84 L404 138 L386 296 Q366 388 256 434 Q146 388 126 296 L108 138 Z" fill="#7a1f17"/>
+    <rect x="240" y="150" width="32" height="230" rx="10" fill="#e8c46a"/>
+    <rect x="180" y="206" width="152" height="30" rx="10" fill="#e8c46a"/>
+    <circle cx="256" cy="140" r="26" fill="#e8c46a"/>
+  </g>
+</svg>

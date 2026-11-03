@@ -1,0 +1,9 @@
+{
+  "name": "@heroes/formats",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./node": "./src/node.ts"
+  }
+}

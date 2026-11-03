@@ -1,0 +1,260 @@
+/* The page's own panels in the original's look (docs/visual-language.md): chat, My notes, How to…, Layouts…,
+   Notifications, the welcome / What's new / invite pop-ups, the install card, the lobby.
+   Loaded after style.css, which still draws them where the game files are missing (a plain brown box); with them,
+   ui/htmlFrame.ts sets `html.framed` and the pieces below as custom properties.
+
+   What this layer says, once, for all of them:
+   - surface: the DIALGBOX frame (corner and edge pieces of the player's colour) around untouched DIBOXBCK leather,
+     no CSS gold border, outline, radius, gradient darkening or drop shadow;
+   - text: the two colours of the game's fonts, YELLOW for titles and what is picked, WHITE for the rest, each with
+     the 1 px black shadow; no blue, green or red accents (the original has none);
+   - things sit in recessed boxes (dark inset, 1 px bevel) divided by thin gold lines; buttons are square, the bevel
+     reverses when pressed (the picked one stays pressed), no pills, no hairline rounded boxes;
+   - emoji standing in for pictures the game has none of are drawn in gold, like an engraved glyph.
+   Rules here use !important where style.css's older, more specific rules would win: this layer is the last word. */
+
+:root {
+  --gold: #e5d77b; /* YELLOW (text.ts) */
+  --text: #fff3de; /* WHITE (text.ts) */
+  --muted: #cbbd96; /* the game greys nothing out in text; hints are WHITE a little dimmer */
+  --shadow: 1px 1px 0 #000;
+  --fs: 1; /* the frame's scale */
+  --line: rgba(229, 215, 123, 0.28); /* a thin gold line between parts */
+  --bevelHi: rgba(229, 215, 123, 0.5);
+  --recess: rgba(0, 0, 0, 0.42);
+}
+
+/* ---- the surface ---------------------------------------------------------------------------------------- */
+html.framed {
+  --edge: calc(var(--fr-edge) * var(--fs) * 1px);
+}
+/* Panels without the game files keep style.css's brown; with them: the frame is the border, so a scrolling panel's
+   words never run under it. */
+html.framed :is(.townPanel, .replies, .advMessage, #installCard, #turnNote, #fbForm) {
+  border: var(--edge) solid transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 10px 14px !important;
+  background:
+    var(--fr-tl) 0 0 / calc(var(--fr-tl-w) * var(--fs) * 1px) calc(var(--fr-tl-h) * var(--fs) * 1px) no-repeat,
+    var(--fr-tr) 100% 0 / calc(var(--fr-tr-w) * var(--fs) * 1px) calc(var(--fr-tr-h) * var(--fs) * 1px) no-repeat,
+    var(--fr-bl) 0 100% / calc(var(--fr-bl-w) * var(--fs) * 1px) calc(var(--fr-bl-h) * var(--fs) * 1px) no-repeat,
+    var(--fr-br) 100% 100% / calc(var(--fr-br-w) * var(--fs) * 1px) calc(var(--fr-br-h) * var(--fs) * 1px) no-repeat,
+    var(--fr-t) 0 0 / calc(var(--fr-t-w) * var(--fs) * 1px) calc(var(--fr-t-h) * var(--fs) * 1px) repeat-x,
+    var(--fr-b) 0 100% / calc(var(--fr-b-w) * var(--fs) * 1px) calc(var(--fr-b-h) * var(--fs) * 1px) repeat-x,
+    var(--fr-l) 0 0 / calc(var(--fr-l-w) * var(--fs) * 1px) calc(var(--fr-l-h) * var(--fs) * 1px) repeat-y,
+    var(--fr-r) 100% 0 / calc(var(--fr-r-w) * var(--fs) * 1px) calc(var(--fr-r-h) * var(--fs) * 1px) repeat-y,
+    var(--menu-bg) 0 0 / auto repeat,
+    #3a2713 !important;
+  background-origin: border-box !important;
+  image-rendering: pixelated;
+}
+/* The corners' flourishes reach inward past the edge: keep words clear of them. */
+html.framed :is(.townPanel, .replies, .advMessage) { padding-top: 16px !important; padding-bottom: 16px !important; }
+/* Panels the frame would crowd on a short screen (a phone sideways): the thinner frame, and no more padding than needed. */
+@media (max-height: 500px) {
+  html.framed :is(.townPanel, .replies, .advMessage) { padding-top: 10px !important; padding-bottom: 10px !important; }
+}
+/* Sub-panels laid over a panel (the avatar picker, people, profile, leaderboard, attachments): recessed leather. */
+:is(.chatPick, .chatPeople, .chatProfile, .chatBoard, .chatAttach) {
+  background: rgba(20, 12, 4, 0.94) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 var(--bevelHi), 0 0 0 1px #000 !important;
+}
+
+/* ---- text ----------------------------------------------------------------------------------------------- */
+:is(.townPanel, .replies, .advMessage, #installCard, #turnNote, #fbForm, #fbPick) {
+  color: var(--text);
+  text-shadow: var(--shadow);
+}
+:is(.townPanel, .replies, .advMessage) :is(h3, h4, .head b, .tabs span, .cap, .askGroup, .who) { color: var(--gold) !important; font-weight: normal; }
+:is(.townPanel, .replies, .advMessage) :is(h3, h4) { border-bottom-color: var(--line) !important; }
+.advMessage h3 { font-size: 1.3em; text-align: center; }
+.advMessage.howto h3 { text-align: center; padding: 0 44px; }
+.advMessage.welcome h3 { padding-right: 56px; }
+.chatPanel .who { font-weight: normal; color: var(--text) !important; }
+.chatPanel :is(.mine, .owner) .who { color: var(--gold) !important; }
+.chatPanel .chatEvent, .chatPanel .thread { color: var(--gold) !important; }
+.chatPanel .chatEvent ul { color: var(--text) !important; }
+.chatPanel .when, .myNotes .when { color: var(--muted); }
+.myNotes .answer b, .myNotes .ask a, .newsRow b { color: var(--gold); }
+.myNotes .ask a { text-decoration: none; }
+@media (hover: hover) { .myNotes .ask a:hover { text-decoration: underline; } }
+.myNotes code, .roadmap code { font: inherit; background: none; padding: 0; color: var(--muted); }
+#invMsg { color: var(--gold) !important; }
+
+/* ---- thin gold lines instead of dark hairlines ------------------------------------------------------------ */
+:is(.chatMsg, .myNotes .note, .myNotes .ask, .myNotes .asks, .notifyPanel .row, .dwellingDialog .row, .mpSlot, #menuMoreList, .chatBoard td, .chatPanel .chatEvent) {
+  border-color: var(--line) !important;
+}
+.chatPanel .answers { border-left-color: var(--line); }
+
+/* ---- recessed boxes --------------------------------------------------------------------------------------- */
+:is(.townPanel, .replies, .advMessage, #installCard, #fbForm, #fbPick) :is(input:not([type="checkbox"]):not([type="range"]):not([type="radio"]), textarea, select),
+.chatPanel .chatProfile .stat, .layoutCard .pic, .myNotes .note img, .myNotes .noShot, .chatPanel .shot, .chatPanel .attachBar img {
+  background: var(--recess) !important;
+  color: var(--text) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 var(--bevelHi), 0 0 0 1px #000 !important;
+}
+:is(.townPanel, .replies, .advMessage, #fbForm) :is(input, textarea)::placeholder { color: var(--muted); opacity: 0.8; }
+:is(.townPanel, .replies, .advMessage, #fbForm) :is(input, textarea):focus { outline: 0; box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 var(--gold), 0 0 0 1px #000 !important; }
+:is(.chatPanel .chatProfile .stat) b { color: var(--text); }
+/* Portraits and avatars sit in a recessed slot with the bevel (the original's creature and hero slots). */
+.chatPanel :is(.meAv, .cell, .pic), .chatPanel img.av, .chatPick .cell, .chatPeople .person img.av, .chatProfile img.av.big, .chatAttach .pic {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background-color: #0d0a06;
+  box-shadow: 0 0 0 1px #000, 0 0 0 2px var(--bevelHi) !important;
+}
+.chatPanel .chatMsg img.av { margin: 2px; }
+
+/* ---- buttons: square, bevelled, the bevel reversed while pressed; the picked one stays pressed --------------- */
+:is(.townPanel, .replies, .advMessage, #installCard, #turnNote, #fbForm, #fbPick, .chatPick, .chatPeople, .chatProfile, .chatBoard, .chatAttach)
+  :is(button, a.btn):not(.ico):not(.meAv):not(.cell):not(.rep):not(.thread) {
+  background: rgba(0, 0, 0, 0.3) !important;
+  color: var(--text) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: inset 1px 1px 0 var(--bevelHi), inset -1px -1px 0 #000, 0 0 0 1px #000 !important;
+  text-shadow: var(--shadow);
+  opacity: 1;
+}
+/* Hover looks only where a pointer hovers: a touch screen keeps the hover on the last thing tapped. */
+:is(.townPanel, .replies, .advMessage, #installCard, #turnNote, #fbForm, #fbPick, .chatPick, .chatPeople, .chatProfile, .chatBoard, .chatAttach)
+  :is(button, a.btn):not(.ico):not(.meAv):not(.cell):not(.rep):not(.thread):focus-visible {
+  color: var(--gold) !important;
+  box-shadow: inset 1px 1px 0 var(--gold), inset -1px -1px 0 #000, 0 0 0 1px #000 !important;
+}
+@media (hover: hover) {
+  :is(.townPanel, .replies, .advMessage, #installCard, #turnNote, #fbForm, #fbPick, .chatPick, .chatPeople, .chatProfile, .chatBoard, .chatAttach)
+    :is(button, a.btn):not(.ico):not(.meAv):not(.cell):not(.rep):not(.thread):hover {
+    color: var(--gold) !important;
+    box-shadow: inset 1px 1px 0 var(--gold), inset -1px -1px 0 #000, 0 0 0 1px #000 !important;
+  }
+}
+:is(.townPanel, .replies, .advMessage, #installCard, #turnNote, #fbForm, #fbPick, .chatPick, .chatPeople, .chatProfile, .chatBoard, .chatAttach)
+  :is(button, a.btn):not(.ico):not(.meAv):not(.cell):not(.rep):not(.thread):is(:active, .on, [aria-pressed="true"]) {
+  color: var(--gold) !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 var(--bevelHi), 0 0 0 1px #000 !important;
+}
+/* What deletes or gives up something for good (htmlIcons.ts "remove"): the same bevel in red-brown, its words after a bin. */
+:is(.townPanel, .replies, .advMessage, #installCard, #turnNote, #fbForm, #fbPick, .chatPick, .chatPeople, .chatProfile, .chatBoard, .chatAttach)
+  :is(button, a.btn).removeBtn:not(.ico):not(.meAv):not(.cell):not(.rep):not(.thread) {
+  color: #f0b8a8 !important;
+  background: rgba(90, 24, 16, 0.6) !important;
+}
+:is(.townPanel, .replies, .advMessage, #installCard, #fbForm, #fbPick) button:disabled:not(.ico) { opacity: 0.5; }
+/* Quiet text buttons (the replies fold, a thread): words in the panel's colours, no box. */
+.chatPanel :is(.rep, .thread) { color: var(--gold) !important; text-shadow: var(--shadow); }
+/* A list of choices (How to…): rows ruled by thin lines, the hovered one YELLOW, no boxes. */
+.advMessage.howto.list > button[data-m] { box-shadow: none !important; background: none !important; border-top: 1px solid var(--line) !important; text-align: center !important; font-size: 18px; margin: 0 !important; }
+@media (hover: hover) { .advMessage.howto.list > button[data-m]:hover { background: var(--recess) !important; } }
+/* Language and layout chips (invite, How to… layouts, the filters): the blue toggles' way, the picked one pressed. */
+#invLang { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+#invLang button { min-width: 52px; }
+
+/* ---- pills, labels and coloured accents --------------------------------------------------------------------- */
+.myNotes :is(.st, .kind) {
+  border-radius: 0 !important;
+  background: var(--recess) !important;
+  box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 var(--bevelHi);
+  color: var(--text) !important;
+  padding: 1px 8px !important;
+}
+.myNotes :is(.st-waiting, .st-working, .st-askp, .st-asko, .st-bump, .st-answered, .st-live) { color: var(--gold) !important; }
+.myNotes :is(.st-dropped, .st-sent, .st-deploy, .st-askx) { color: var(--muted) !important; }
+.myNotes .answer { border-left: 0; background: var(--recess); box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 var(--bevelHi); }
+.chatPanel .inviteBar, .chatPanel .replyBar { background: var(--recess) !important; border: 0 !important; border-radius: 0 !important; box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 var(--bevelHi); color: var(--gold); }
+.chatPanel .inviteBar { color: var(--gold); }
+.chatProfile h3 small { border: 0; border-radius: 0; background: var(--recess); box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 var(--bevelHi); color: var(--text); }
+.chatPanel .head .mic.on, .chatPanel .mic.on, .myNotes .noteEdit .mic.on { background: rgba(0, 0, 0, 0.55) !important; color: var(--gold) !important; }
+.layoutCard.on { box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 var(--gold), 0 0 0 1px #000 !important; }
+.layoutCard small, .townPanel .row.hint { color: var(--muted); }
+.townPanel .layoutCard { padding: 6px !important; }
+.layoutCard .pic { background: #000 !important; }
+.notifyPanel .row.hint, .townPanel .sub { color: var(--muted); }
+
+/* ---- emoji that stand for a picture the game has none of: gold, like an engraved glyph --------------------------- */
+button.ico.glyph::before, .newsRow .ico, .chatPanel .head :is(.people, .trophy, .bell), .chatPanel .mic, .chatPanel .plus {
+  filter: grayscale(1) sepia(1) saturate(2.6) brightness(1.15);
+}
+.chatPanel .head :is(.people, .trophy, .bell) { min-width: 40px; min-height: 40px; }
+
+/* ---- pieces with their own look ----------------------------------------------------------------------------- */
+/* Round corner buttons keep style.css's twins (☰ and Feedback). */
+/* The welcome and What's new cards (reels.ts). */
+.advMessage.welcome .inApp { background: var(--recess); border-left: 0; box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 var(--bevelHi); }
+/* The close tick floats at the top right, the words flow round it. */
+.advMessage > .close { float: right; margin: 0 0 6px 10px; }
+/* What sticks to the top or foot of a scrolling panel hides what scrolls under it: the same leather. */
+/* (a recessed band, not a copy of the leather: a copy would not line up with it) */
+.myNotes .head, .advMessage .tourNav { background: #2a1a0b !important; box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 var(--bevelHi); padding-left: 8px !important; padding-right: 8px !important; }
+#inviteDialog > p:first-child b { color: var(--gold); font-weight: normal; font-size: 1.2em; }
+/* Install card, the turn note and the lobby's rows speak in the same two colours. */
+#installCard p, #turnNote { color: var(--text); font-family: inherit; }
+#turnNote button { font: inherit; padding: 8px 16px; }
+.mpSlot.me { background: var(--recess); }
+.mpSlot { border-bottom-color: var(--line); }
+.mpSwatch { border-radius: 0; }
+.mpClock, .mpChat div, #loadingNote { border-radius: 0 !important; }
+/* The demo's stand-in screen is a picture of our own UI: its frame is the game's recess too. */
+.mvStage { border: 0 !important; border-radius: 0 !important; box-shadow: 0 0 0 1px #000, 0 0 0 2px var(--bevelHi); }
+.mvDots i { border-radius: 0 !important; }
+.howtoShade, .welcomeShade { background: rgba(0, 0, 0, 0.55); }
+
+/* Touch screens: the frame stays the game's size; the panel's text is already a finger's size (style.css). */
+@media (pointer: coarse) { :root { --fs: 1; } }
+
+/* Glyph buttons (no picture in the game): the same bevelled square as the other buttons. */
+button.ico.glyph { border: 0 !important; border-radius: 0 !important; background: rgba(0, 0, 0, 0.3) !important; box-shadow: inset 1px 1px 0 var(--bevelHi), inset -1px -1px 0 #000, 0 0 0 1px #000; }
+button.ico.glyph.on { box-shadow: inset 1px 1px 0 var(--gold), inset -1px -1px 0 #000, 0 0 0 1px #000; }
+@media (hover: hover) { button.ico.glyph:hover { box-shadow: inset 1px 1px 0 var(--gold), inset -1px -1px 0 #000, 0 0 0 1px #000; } }
+/* A row with a tick: the tick drops under the words when there is no room beside them (a phone upright). */
+.myNotes .ask { flex-wrap: wrap; }
+.myNotes .ask > span:nth-child(2) { flex: 1 1 150px; min-width: 0; }
+.myNotes .ask > button { margin-left: auto; }
+html.framed .myNotes .head { top: -16px; margin-top: -16px; padding: 10px 0 6px; }
+
+/* Sub-panels start under the header, which the frame's padding has moved down. */
+html.framed .chatPanel :is(.chatPick, .chatPeople, .chatProfile, .chatBoard) { inset-block-start: 76px; }
+html.framed .chatPanel .chatPeople, html.framed .chatPanel .chatProfile, html.framed .chatPanel .chatPick { inset: 76px 6px 6px; }
+.chatPanel .meAv { flex: none; }
+:is(.townPanel, .replies, .advMessage, #fbForm, #fbPick) :is(input, textarea, select):focus { outline: 0 !important; }
+/* The Feedback pop-up on a touch screen: the frozen screen, a bar of marking tools, one line of words. */
+#fbPick .fbBar { background: var(--recess) !important; border: 0 !important; border-radius: 0 !important; box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 var(--bevelHi), 0 0 0 1px #000; }
+#fbPick .fbSaid, .fbFlash { color: var(--text); text-shadow: var(--shadow); }
+.fbFlash { border: 0 !important; border-radius: 0 !important; background: var(--recess) !important; color: var(--gold) !important; box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 var(--bevelHi), 0 0 0 1px #000; }
+/* A phone sideways: the demos' stand-in screen smaller, to leave the frame its room. */
+@media (max-height: 480px) {
+  html.framed .mvStage { width: min(100%, calc(37dvh * var(--ar, 1.78))); }
+  html.framed .advMessage.howto { padding-top: 8px !important; padding-bottom: 8px !important; }
+}
+
+/* A narrow screen (a phone upright): the chat's header fits its row. */
+@media (max-width: 480px) {
+  .chatPanel .head { gap: 4px; }
+  .chatPanel .head :is(.people, .trophy, .bell) { min-width: 36px; padding-left: 4px; padding-right: 4px; }
+  .chatPanel .head .x { width: 80px !important; height: 44px !important; }
+}
+/* ☰ → Play as a new player's choice (asTesterPick.ts): the original's selection message, two pictures with captions, the picked one framed in gold. */
+#testerPick { z-index: 55; top: 50%; width: min(460px, calc(var(--page-w, 100vw) - 32px)); }
+#testerPick .picks { display: flex; gap: 10px; justify-content: center; margin: 0 0 6px; }
+#testerPick .pick { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 8px !important; min-height: 44px; border: 2px solid transparent !important; }
+#testerPick .pick.on { border-color: var(--gold) !important; outline: 2px solid var(--gold); outline-offset: 1px; }
+#testerPick .pick .pic { font-size: 34px; line-height: 1; width: 58px; height: 58px; display: flex; align-items: center; justify-content: center; background: var(--recess, #18120a); }
+#testerPick .pick b { color: var(--gold); font-weight: normal; font-size: 16px; }
+#testerPick .pick small { font-size: 13px; line-height: 1.3; opacity: 0.9; }
+#testerPick .langs { display: flex; gap: 5px; justify-content: center; margin: 4px 0 6px; }
+#testerPick .langs button { flex: 1 1 0; min-width: 0; max-width: 56px; min-height: 44px; padding: 4px 0 !important; font-size: 16px; }
+#testerPick .langs button.on { outline: 2px solid var(--gold); color: var(--gold) !important; }
+#testerPick .msg { min-height: 1.2em; margin: 0 0 4px; color: #e88; }
+#testerPick .acts { display: flex; gap: 12px; justify-content: center; }
+#testerPick { max-height: calc(var(--page-h, 100vh) - 24px); overflow-y: auto; }
+
+/* A battle on a touch screen stands on the game's leather to the screen's edges, as its rooms do (battle/view.ts
+   placeGround): never black bars beside the canvas (2026-10-26). */
+html.framed body.coarse.inBattle { background: var(--menu-bg) repeat; }

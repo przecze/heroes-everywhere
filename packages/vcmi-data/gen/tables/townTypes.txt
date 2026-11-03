@@ -1,0 +1,33 @@
+/** ["all" | "any" | "none", ...] over building ids, or a single id. */
+export type Requirement = number | [string, ...Requirement[]];
+
+export interface TownBuilding {
+  key: string;
+  /** The building this one replaces (Town Hall upgrades Village Hall, ...). */
+  upgrades: number | null;
+  requires: Requirement | null;
+  /** Town-screen sprite and position; z orders overlapping structures. */
+  def: string;
+  x: number;
+  y: number;
+  z: number;
+  border: string;
+  area: string;
+  /** HotA towns: name, cost and description from the mod (the classic ones come from the game's texts). */
+  name?: string;
+  cost?: number[];
+  description?: string;
+}
+
+export interface TownInfo {
+  faction: string;
+  background: string;
+  /** [basic, upgraded] creature ids per level 1-7. */
+  creatures: number[][];
+  /** Creature level boosted by each horde building (-1 = none). */
+  horde: number[];
+  mageGuild: number;
+  buildings: Record<number, TownBuilding>;
+  /** Extra animations on the town screen not tied to one building. */
+  decorations: { def: string; x: number; y: number; z: number; builds: string | null }[];
+}

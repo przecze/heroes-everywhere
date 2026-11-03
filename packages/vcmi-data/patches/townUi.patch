@@ -1,0 +1,22 @@
+--- townUi.ts (generated)
++++ townUi.ts (with our fixes)
+~15 27ba541e
+  @127+1 "mods/heroes3datapatch/content/sprites/hallcstl"
+~16 0f7db268
+  @133+1 "mods/heroes3datapatch/content/sprites/hallramp"
+~17 72d44dc6
+  @133+1 "mods/heroes3datapatch/content/sprites/halltowr"
+~18 d54c8f14
+  @133+1 "mods/heroes3datapatch/content/sprites/hallnecr"
+~19 06b36cab
+  @135+1 "mods/heroes3datapatch/content/sprites/hallinfr"
+~23 9ffe9576
+  @56+0 "special2"],[
+  @62+4 
+  @76+1 "horde2","horde2Upgr"
+  @88+1 "dwellingLvl2","dwellingUpLvl2"
+  @92+1 "dwellingLvl3"
+  @94+1 "dwellingUpLvl3"
+  @127+1 "TPTHBKNC.BMP"
+  @131+1 "mods/heroes3datapatch/content/sprites/hallelem"
+  @136+1 "mods/heroes3datapatch/content/data/tpmageel.png"

@@ -1,0 +1,36 @@
+--- campaignMedia.ts (generated)
++++ campaignMedia.ts (with our fixes)
+~197 a352c908
+  @4+1 "factorycampaign"
+~198 f8447397
+  @4+1 "hotacamptheme01"
+~199 81831587
+  @4+1 "hotacamptheme02"
+~200 557e97af
+  @4+1 "hotacamptheme03"
+~201 7652c584
+  @4+1 "hotacamptheme04"
+~202 9babb0b4
+  @4+1 "hotacamptheme05"
+~203 424c0148
+  @4+1 "hotacamptheme06"
+~204 ab16beb8
+  @4+1 "hotacamptheme07"
+~205 00de6ea9
+  @4+1 "hotacamptheme08"
+~206 c915b425
+  @4+1 "hotacamptheme09"
+~207 fdcba875
+  @4+1 "dargemcampaigntheme"
+~208 d283e182
+  @4+1 "dargemintro1"
+~209 b9bc0c00
+  @4+1 "dargemintro2"
+~210 95118f58
+  @4+1 "dargemintro3"
+~211 2e13c4ab
+  @4+1 "dargemintro4"
+~212 b8f0e7dd
+  @4+1 "dargemintro5"
+~213 68ce9248
+  @4+1 "dargemoutro5"

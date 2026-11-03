@@ -1,0 +1,18 @@
+export interface Ability {
+  type: string;
+  subtype?: string;
+  val?: number;
+}
+
+export interface CreatureInfo {
+  key: string;
+  faction: string;
+  level: number;
+  def: string;
+  missile: string;
+  sound: string;
+  abilities: Ability[];
+  /** Shooters that fire a beam instead of a projectile: [start RGBA, end RGBA] per parallel line. */
+  ray?: number[][][];
+}
+

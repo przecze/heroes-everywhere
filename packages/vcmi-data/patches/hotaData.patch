@@ -1,0 +1,18 @@
+--- hotaData.ts (generated)
++++ hotaData.ts (with our fixes)
+~40 4463700e
+  @148+1 ""
+~42 81b71f49
+  @120+10 
+~43 92baa8cc
+  @120+10 
+~82 66728706
+  @114+0 "NONE"},{"type":
+~86 e01d05fa
+  @104+1 "defenceWhileDefending"
+  @109+0 },{"type":"NONE"
+~87 e89c9c51
+  @134+0 "NONE"},{"type":
+~88 7a872e78
+  @134+0 "NONE"},{"type":
+-94 8bb3aafb

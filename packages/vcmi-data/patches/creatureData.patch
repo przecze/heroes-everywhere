@@ -1,0 +1,30 @@
+--- creatureData.ts (generated)
++++ creatureData.ts (with our fixes)
+~57 e8398b7d
+  @47+0 "NO_WALL_PENALTY"},{"type":
+~60 10bf252d
+  @55+1 6
+~101 1fd8e426
+  @37+0 "subtype":"minimum",
+~102 faaf5006
+  @37+0 "subtype":"minimum",
+~114 c1e4ce50
+  @63+1 6
+~138 5f12bbff
+  @73+1 "SPELL_IMMUNITY"
+  @77+5 "freezingShot"
+  @91+1 "fireball"
+  @105+1 "inferno"
+  @119+15 "armageddon"
+~145 f5c5a592
+  @113+1 "SPELL_IMMUNITY"
+  @117+5 "freezingShot"
+  @131+1 "fireball"
+  @145+1 "inferno"
+  @159+15 "armageddon"
+~155 b985b5ce
+  @143+0 ,{"type":"ENCHANTER","subtype":"bloodlust","val":3},{"type":"ENCHANTER","subtype":"cure","val":3}
+~160 0cd7ce09
+  @49+1 25
+~167 736f3963
+  @27+1 "CART"

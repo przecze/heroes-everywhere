@@ -1,0 +1,27 @@
+export interface SpecialtyBonus {
+  type: string;
+  subtype?: string;
+  spell?: number | string;
+  resource?: number;
+  val?: number;
+  perLevel?: boolean;
+  perLevelByCreatureLevel?: boolean;
+  grows?: [number, number];
+  creatures?: number[];
+  maxLevel?: number;
+  addInfo?: number;
+  /** HotA's tier bonuses: extra effect by the target's level 1-7. */
+  tiers?: number[];
+}
+
+export interface Specialty {
+  /** Creature specialist: these creatures (and upgrades) get +1 speed and +5% attack/defence per (hero level / creature level). */
+  creatures?: number[];
+  creatureLevel?: number;
+  /** Percent per step of creatureLevel hero levels (HotA: 20; 10 for level 1 creatures, 30 for the Ballista). */
+  step?: number;
+  /** Secondary skill specialist: the skill works 5% better per hero level. */
+  skill?: number;
+  bonuses?: SpecialtyBonus[];
+}
+

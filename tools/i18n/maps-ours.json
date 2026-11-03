@@ -1,0 +1,23 @@
+{
+  "_": "Our own words for bundled maps the packs have no translation of (maps-text.ts lays them over the packs'; keys as the packs': map.<file>.<key>).",
+  "pl": {
+    "map.[hota] paradise of the mind.header.name": "Raj umysłu",
+    "map.[hota] paradise of the mind.header.description": "Ten świat jest bujny i hojny, lecz każdego, kto stąpa po jego ziemi, nękają żywe sny, które jątrzą umysł. Z czasem granica między jawą a snem się zaciera. Musisz znaleźć lekarstwo na tę dziwną przypadłość i zniszczyć wszystkich, którzy staną ci na drodze.",
+    "map.[hota] noble nemesis.header.name": "Szlachetny wróg",
+    "map.[hota] noble nemesis.header.description": "Okrutny król rządzi tą krainą żelazną ręką. Napięcie rośnie: kto odważy się rzucić wyzwanie jego władzy i jaką cenę za to zapłaci?",
+    "map.[hota] taming of the shrew.header.name": "Poskromienie złośnicy",
+    "map.[hota] taming of the shrew.header.description": "Księżniczka Cait jest złośliwa, wulgarna... i jest dziedziczką ogromnej fortuny, dlatego wpadła ci w oko. Aby zdobyć jej serce, musisz pokonać w bitwie ją i jej przyjaciół piratów.",
+    "map.[hota] the cursed legions.header.name": "Przeklęte legiony",
+    "map.[hota] the cursed legions.header.description": "Wszystko zaczęło się nagle. Skaliste i wulkaniczne ziemie zajęli nekromanci, a niektóre jaskinie roją się od umarłych. Zdaje się, że nie ma nadziei: nekromanci przybyli w sile, a ich szkielety są wszędzie. Jednak armie z głównych twierdz pałają chęcią, by spalić wszystko na swojej drodze."
+  },
+  "de": {
+    "map.[hota] paradise of the mind.header.name": "Paradies des Geistes",
+    "map.[hota] paradise of the mind.header.description": "Diese Welt ist üppig und reich, doch alle, die ihren Boden betreten, leiden unter lebhaften Träumen, die im Geist schwären. Mit der Zeit verschwimmt die Grenze zwischen Wachen und Schlafen. Ihr müsst ein Heilmittel für dieses seltsame Leiden finden und alle vernichten, die sich Euch in den Weg stellen.",
+    "map.[hota] noble nemesis.header.name": "Edler Erzfeind",
+    "map.[hota] noble nemesis.header.description": "Ein grausamer König regiert das Land mit eiserner Faust. Die Spannung wächst: Wer wagt es, seine Herrschaft herauszufordern, und zu welchem Preis?",
+    "map.[hota] taming of the shrew.header.name": "Der Widerspenstigen Zähmung",
+    "map.[hota] taming of the shrew.header.description": "Prinzessin Cait ist gemein, ungehobelt... und Erbin eines riesigen Vermögens, weshalb Ihr ein Auge auf sie geworfen habt. Um ihr Herz zu gewinnen, müsst Ihr sie und ihre Piratenfreunde im Kampf besiegen.",
+    "map.[hota] the cursed legions.header.name": "Die verfluchten Legionen",
+    "map.[hota] the cursed legions.header.description": "Alles begann plötzlich. Die felsigen und vulkanischen Länder wurden von Nekromanten eingenommen, und manche Höhlen quellen über vor Toten. Es scheint keine Hoffnung zu geben: Die Nekromanten kamen in großer Zahl, und ihre Skelette sind überall. Doch die Armeen der großen Festungen brennen darauf, alles auf ihrem Weg niederzubrennen."
+  }
+}

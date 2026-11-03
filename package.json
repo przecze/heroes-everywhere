@@ -1,0 +1,25 @@
+{
+  "name": "heroes",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/formats",
+    "packages/core",
+    "packages/server",
+    "packages/host",
+    "packages/client"
+  ],
+  "scripts": {
+    "dev": "npm run host & npm run dev -w @heroes/client",
+    "host": "node --watch packages/host/src/main.ts",
+    "build": "npm run build -w @heroes/client",
+    "start": "cd packages/client && (node ../host/src/main.ts & node serve.ts)",
+    "typecheck": "tsc -p .",
+    "test": "node --test 'packages/*/test/*.test.ts'"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "typescript": "5.9.3",
+    "vite": "7.3.7"
+  }
+}
